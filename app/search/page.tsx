@@ -3,10 +3,78 @@
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Search, MapPin, Filter, X, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, MapPin, Filter, X, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DentistCard from '@/components/DentistCard';
 import type { Dentist } from '@/lib/dentist-data';
+
+const ITEMS_PER_PAGE = 12;
+
+const dentistTypes = [
+  { value: 'general-dentist', label: 'General Dentist' },
+  { value: 'pediatric-dentist', label: 'Pediatric Dentist' },
+  { value: 'cosmetic-dentist', label: 'Cosmetic Dentist' },
+  { value: 'orthodontist', label: 'Orthodontist' },
+  { value: 'oral-surgeon', label: 'Oral Surgeon' },
+  { value: 'endodontist', label: 'Endodontist' },
+  { value: 'periodontist', label: 'Periodontist' },
+  { value: 'prosthodontist', label: 'Prosthodontist' },
+  { value: 'emergency-dentist', label: 'Emergency Dentist' },
+];
+
+const usStates = [
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
+  { value: 'WY', label: 'Wyoming' },
+  { value: 'DC', label: 'District of Columbia' },
+];
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -14,12 +82,16 @@ function SearchContent() {
   const [state, setState] = useState(searchParams.get('state') || '');
   const [type, setType] = useState(searchParams.get('type') || '');
   const [emergency, setEmergency] = useState(searchParams.get('emergency') === 'true');
-  const [results, setResults] = useState<Dentist[]>([]);
+  const [allResults, setAllResults] = useState<Dentist[]>([]);
+  const [displayedResults, setDisplayedResults] = useState<Dentist[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
 
   const performSearch = useCallback(async () => {
     setLoading(true);
+    setPage(1);
     try {
       const params = new URLSearchParams();
       if (query) params.set('q', query);
@@ -30,7 +102,9 @@ function SearchContent() {
       const response = await fetch(`/api/search?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setResults(data.dentists || []);
+        const results = data.dentists || [];
+        setAllResults(results);
+        setDisplayedResults(results.slice(0, ITEMS_PER_PAGE));
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -49,6 +123,21 @@ function SearchContent() {
     return () => clearTimeout(timer);
   }, [query, state, type, emergency, performSearch]);
 
+  const loadMore = () => {
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const startIndex = 0;
+    const endIndex = nextPage * ITEMS_PER_PAGE;
+
+    setTimeout(() => {
+      setDisplayedResults(allResults.slice(startIndex, endIndex));
+      setPage(nextPage);
+      setLoadingMore(false);
+    }, 300);
+  };
+
+  const hasMore = displayedResults.length < allResults.length;
+
   const clearFilters = () => {
     setQuery('');
     setState('');
@@ -57,6 +146,16 @@ function SearchContent() {
   };
 
   const hasActiveFilters = query || state || type || emergency;
+
+  const getTypeLabel = (value: string) => {
+    const found = dentistTypes.find(t => t.value === value);
+    return found?.label || value;
+  };
+
+  const getStateLabel = (value: string) => {
+    const found = usStates.find(s => s.value === value);
+    return found?.label || value;
+  };
 
   return (
     <>
@@ -128,17 +227,9 @@ function SearchContent() {
                   className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">All States</option>
-                  <option value="AL">Alabama</option>
-                  <option value="AK">Alaska</option>
-                  <option value="AZ">Arizona</option>
-                  <option value="CA">California</option>
-                  <option value="CO">Colorado</option>
-                  <option value="FL">Florida</option>
-                  <option value="GA">Georgia</option>
-                  <option value="IL">Illinois</option>
-                  <option value="NY">New York</option>
-                  <option value="TX">Texas</option>
-                  {/* Add more states as needed */}
+                  {usStates.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -151,13 +242,9 @@ function SearchContent() {
                   className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="">All Types</option>
-                  <option value="general">General Dentist</option>
-                  <option value="cosmetic">Cosmetic Dentist</option>
-                  <option value="orthodontist">Orthodontist</option>
-                  <option value="pediatric">Pediatric Dentist</option>
-                  <option value="oral-surgeon">Oral Surgeon</option>
-                  <option value="endodontist">Endodontist</option>
-                  <option value="periodontist">Periodontist</option>
+                  {dentistTypes.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -191,7 +278,7 @@ function SearchContent() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold">
-                  {loading ? 'Searching...' : `${results.length} Results`}
+                  {loading ? 'Searching...' : `${allResults.length} Results`}
                 </h2>
                 {hasActiveFilters && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -205,7 +292,7 @@ function SearchContent() {
                     )}
                     {state && (
                       <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                        {state}
+                        {getStateLabel(state)}
                         <button onClick={() => setState('')}>
                           <X className="w-3 h-3" />
                         </button>
@@ -213,7 +300,7 @@ function SearchContent() {
                     )}
                     {type && (
                       <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                        {type}
+                        {getTypeLabel(type)}
                         <button onClick={() => setType('')}>
                           <X className="w-3 h-3" />
                         </button>
@@ -248,12 +335,44 @@ function SearchContent() {
                   </div>
                 ))}
               </div>
-            ) : results.length > 0 ? (
-              <div className="space-y-4">
-                {results.map((dentist) => (
-                  <DentistCard key={dentist.id} dentist={dentist} />
-                ))}
-              </div>
+            ) : displayedResults.length > 0 ? (
+              <>
+                <div className="space-y-4">
+                  {displayedResults.map((dentist) => (
+                    <DentistCard key={dentist.id} dentist={dentist} />
+                  ))}
+                </div>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="mt-8 text-center">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="min-w-[200px]"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4 mr-2" />
+                          Load More ({allResults.length - displayedResults.length} remaining)
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Results count */}
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                  Showing {displayedResults.length} of {allResults.length} results
+                </p>
+              </>
             ) : hasActiveFilters ? (
               <div className="bg-gray-50 rounded-xl p-12 text-center">
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">

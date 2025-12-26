@@ -445,9 +445,28 @@ export async function searchDentists(query: string, filters?: {
   }
 
   if (filters?.type) {
-    dentists = dentists.filter(d =>
-      d.businessType?.toLowerCase().includes(filters.type!.toLowerCase())
-    );
+    const typeFilter = filters.type.toLowerCase();
+    // Map filter slugs to actual business_type values
+    const typeMapping: Record<string, string[]> = {
+      'general-dentist': ['dentist', 'dental clinic', 'dental office', 'family dentist'],
+      'pediatric-dentist': ['pediatric dentist', 'pediatric', 'children', 'kids dentist'],
+      'cosmetic-dentist': ['cosmetic dentist', 'cosmetic', 'teeth whitening'],
+      'orthodontist': ['orthodontist', 'braces', 'invisalign'],
+      'oral-surgeon': ['oral surgeon', 'oral and maxillofacial', 'dental surgery'],
+      'endodontist': ['endodontist', 'root canal'],
+      'periodontist': ['periodontist', 'gum', 'dental implants periodontist'],
+      'emergency-dentist': ['emergency dental', 'emergency room', 'urgent care'],
+      'prosthodontist': ['prosthodontist', 'dentures', 'dental implants provider'],
+    };
+
+    const searchTerms = typeMapping[typeFilter] || [typeFilter];
+    dentists = dentists.filter(d => {
+      const bt = d.businessType?.toLowerCase() || '';
+      const categories = d.specialties?.map(s => s.toLowerCase()) || [];
+      return searchTerms.some(term =>
+        bt.includes(term) || categories.some(cat => cat.includes(term))
+      );
+    });
   }
 
   if (filters?.city) {
