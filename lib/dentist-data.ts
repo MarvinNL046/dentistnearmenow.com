@@ -433,6 +433,7 @@ export async function searchDentists(query: string, filters?: {
   type?: string;
   city?: string;
   emergency?: boolean;
+  sedation?: boolean;
 }): Promise<Dentist[]> {
   let dentists = await getAllDentists();
 
@@ -477,6 +478,20 @@ export async function searchDentists(query: string, filters?: {
 
   if (filters?.emergency) {
     dentists = dentists.filter(d => d.emergencyServices === true);
+  }
+
+  if (filters?.sedation) {
+    dentists = dentists.filter(d => {
+      // Check services and specialties for sedation-related keywords
+      const services = d.services?.map(s => s.toLowerCase()) || [];
+      const specialties = d.specialties?.map(s => s.toLowerCase()) || [];
+      const sedationKeywords = ['sedation', 'anxiety', 'nervous', 'anxious', 'conscious sedation', 'iv sedation', 'oral sedation', 'nitrous', 'laughing gas'];
+
+      return sedationKeywords.some(keyword =>
+        services.some(s => s.includes(keyword)) ||
+        specialties.some(s => s.includes(keyword))
+      );
+    });
   }
 
   // Apply search query

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronRight, BookOpen, Shield, CreditCard, Smile, Baby, Clock, Users, Heart } from 'lucide-react';
+import { ChevronRight, BookOpen, Shield, CreditCard, Smile, Baby, Clock, Users, Heart, Brain } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Dental Guides - Expert Tips for Oral Health',
@@ -15,6 +15,14 @@ const guides = [
     icon: Users,
     readTime: '8 min read',
     category: 'Getting Started',
+  },
+  {
+    slug: 'dental-anxiety',
+    title: 'Overcoming Dental Anxiety',
+    description: 'A complete guide to managing dental fear, including sedation options and tips to make your visits comfortable.',
+    icon: Brain,
+    readTime: '10 min read',
+    category: 'Patient Care',
   },
   {
     slug: 'dental-insurance',
@@ -74,7 +82,7 @@ const guides = [
   },
 ];
 
-const categories = ['All', 'Getting Started', 'Insurance', 'Prevention', 'Treatments', 'Family', 'Emergency', 'Education'];
+const categories = ['All', 'Getting Started', 'Patient Care', 'Insurance', 'Prevention', 'Treatments', 'Family', 'Emergency', 'Education'];
 
 export default function GuidesPage() {
   return (

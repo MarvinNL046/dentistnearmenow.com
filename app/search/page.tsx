@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, MapPin, Filter, X, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -78,16 +78,31 @@ const usStates = [
 
 function SearchContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [state, setState] = useState(searchParams.get('state') || '');
   const [type, setType] = useState(searchParams.get('type') || '');
   const [emergency, setEmergency] = useState(searchParams.get('emergency') === 'true');
+  const [sedation, setSedation] = useState(searchParams.get('sedation') === 'true');
   const [allResults, setAllResults] = useState<Dentist[]>([]);
   const [displayedResults, setDisplayedResults] = useState<Dentist[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
+
+  // Update URL with current filters
+  const updateUrl = useCallback(() => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (state) params.set('state', state);
+    if (type) params.set('type', type);
+    if (emergency) params.set('emergency', 'true');
+    if (sedation) params.set('sedation', 'true');
+
+    const newUrl = params.toString() ? `/search?${params.toString()}` : '/search';
+    router.push(newUrl, { scroll: false });
+  }, [query, state, type, emergency, sedation, router]);
 
   const performSearch = useCallback(async () => {
     setLoading(true);
@@ -98,6 +113,7 @@ function SearchContent() {
       if (state) params.set('state', state);
       if (type) params.set('type', type);
       if (emergency) params.set('emergency', 'true');
+      if (sedation) params.set('sedation', 'true');
 
       const response = await fetch(`/api/search?${params.toString()}`);
       if (response.ok) {
@@ -111,17 +127,17 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, [query, state, type, emergency]);
+  }, [query, state, type, emergency, sedation]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (query || state || type || emergency) {
+      if (query || state || type || emergency || sedation) {
         performSearch();
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, state, type, emergency, performSearch]);
+  }, [query, state, type, emergency, sedation, performSearch]);
 
   const loadMore = () => {
     setLoadingMore(true);
@@ -143,9 +159,12 @@ function SearchContent() {
     setState('');
     setType('');
     setEmergency(false);
+    setSedation(false);
+    // Also clear the URL
+    router.push('/search', { scroll: false });
   };
 
-  const hasActiveFilters = query || state || type || emergency;
+  const hasActiveFilters = query || state || type || emergency || sedation;
 
   const getTypeLabel = (value: string) => {
     const found = dentistTypes.find(t => t.value === value);
@@ -261,13 +280,39 @@ function SearchContent() {
                 </label>
               </div>
 
-              {/* Close Button (Mobile) */}
+              {/* Sedation/Anxiety-Friendly Filter */}
+              <div className="mb-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sedation}
+                    onChange={(e) => setSedation(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-sm font-medium">Anxiety-Friendly / Sedation Available</span>
+                </label>
+              </div>
+
+              {/* Apply Filters Button */}
               <Button
-                variant="outline"
-                className="w-full lg:hidden"
+                variant="default"
+                className="w-full"
+                onClick={() => {
+                  updateUrl();
+                  setShowFilters(false);
+                }}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Apply Filters
+              </Button>
+
+              {/* Close Button (Mobile) - without applying */}
+              <Button
+                variant="ghost"
+                className="w-full mt-2 lg:hidden"
                 onClick={() => setShowFilters(false)}
               >
-                Apply Filters
+                Cancel
               </Button>
             </div>
           </aside>
@@ -310,6 +355,14 @@ function SearchContent() {
                       <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
                         Emergency
                         <button onClick={() => setEmergency(false)}>
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                    {sedation && (
+                      <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                        Anxiety-Friendly
+                        <button onClick={() => setSedation(false)}>
                           <X className="w-3 h-3" />
                         </button>
                       </span>
