@@ -2,6 +2,9 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, MapPin, Users, Phone } from 'lucide-react';
+
+// ISR: Revalidate every 24 hours
+export const revalidate = 86400;
 import { getDentistsByCity, getStateByAbbr, getAllDentists } from '@/lib/dentist-data';
 import DentistCard from '@/components/DentistCard';
 

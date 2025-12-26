@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+// ISR: Revalidate every 24 hours
+export const revalidate = 86400;
 import {
   ChevronRight,
   MapPin,
