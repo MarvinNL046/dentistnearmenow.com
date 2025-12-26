@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design Theme: Clean Dental & Trust */
+
+    /* Backgrounds */
+    --background: 210 30% 97%;           /* Light blue-gray #F5F8FA */
+    --foreground: 210 30% 15%;           /* Dark blue-gray #1F2937 */
+
+    /* Cards & Popovers */
+    --card: 0 0% 100%;                   /* White */
+    --card-foreground: 210 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 30% 15%;
+
+    /* Primary: Medical Blue */
+    --primary: 210 80% 45%;              /* #1A73E8 */
+    --primary-foreground: 0 0% 100%;     /* White */
+
+    /* Secondary: Light gray */
+    --secondary: 210 20% 94%;            /* #EEF2F6 */
+    --secondary-foreground: 210 30% 25%;
+
+    /* Accent: Teal/Mint */
+    --accent: 168 70% 42%;               /* #0D9488 */
+    --accent-foreground: 0 0% 100%;      /* White */
+
+    /* Muted */
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 15% 50%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 210 15% 88%;               /* #D9E2EC */
+    --input: 210 15% 88%;
+    --ring: 210 80% 45%;                 /* Blue focus ring */
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Custom Shadows */
+    --shadow-soft: 0 4px 20px rgba(26, 115, 232, 0.08);
+    --shadow-hover: 0 8px 30px rgba(26, 115, 232, 0.12);
+  }
+
+  /* Dark mode */
+  .dark {
+    --background: 210 30% 8%;            /* Dark blue-gray */
+    --foreground: 210 20% 92%;           /* Light gray */
+
+    --card: 210 30% 12%;
+    --card-foreground: 210 20% 92%;
+    --popover: 210 30% 12%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 210 80% 55%;              /* Lighter blue */
+    --primary-foreground: 210 30% 8%;
+
+    --secondary: 210 25% 18%;
+    --secondary-foreground: 210 20% 90%;
+
+    --accent: 168 70% 50%;
+    --accent-foreground: 210 30% 8%;
+
+    --muted: 210 25% 18%;
+    --muted-foreground: 210 15% 60%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 25% 22%;
+    --input: 210 25% 22%;
+    --ring: 210 80% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}

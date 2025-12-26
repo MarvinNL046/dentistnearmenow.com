@@ -1,0 +1,463 @@
+import { relations } from "drizzle-orm/relations";
+import { users, blogPosts, blogCategories, adCampaigns, adImpressions, businesses, places, adPackages, adminAuditLogs, auditLogs, businessNotifications, reviews, leads, subscriptionPlans, businessPhotos, karmaEvents, badgeDefinitions, messageThreads, messages, creditTransactions, notificationSettings, pageViews, placeRefreshJobs, reviewPhotos, placeClaims, reviewReplies, countries, provinces, cities, messageAttachments, notificationLogs, userBadges, userFavorites, userRecentViews, placeCategories, categories, blogPostTags, blogTags } from "./schema";
+
+export const blogPostsRelations = relations(blogPosts, ({one, many}) => ({
+	user: one(users, {
+		fields: [blogPosts.authorId],
+		references: [users.id]
+	}),
+	blogCategory: one(blogCategories, {
+		fields: [blogPosts.categoryId],
+		references: [blogCategories.id]
+	}),
+	blogPostTags: many(blogPostTags),
+}));
+
+export const usersRelations = relations(users, ({many}) => ({
+	blogPosts: many(blogPosts),
+	adminAuditLogs: many(adminAuditLogs),
+	auditLogs: many(auditLogs),
+	businesses: many(businesses),
+	businessPhotos: many(businessPhotos),
+	karmaEvents: many(karmaEvents),
+	messages: many(messages),
+	messageThreads: many(messageThreads),
+	notificationSettings: many(notificationSettings),
+	reviewPhotos: many(reviewPhotos),
+	reviews: many(reviews),
+	placeClaims_userId: many(placeClaims, {
+		relationName: "placeClaims_userId_users_id"
+	}),
+	placeClaims_reviewedBy: many(placeClaims, {
+		relationName: "placeClaims_reviewedBy_users_id"
+	}),
+	reviewReplies: many(reviewReplies),
+	places: many(places),
+	notificationLogs: many(notificationLogs),
+	userBadges: many(userBadges),
+	userFavorites: many(userFavorites),
+	userRecentViews: many(userRecentViews),
+}));
+
+export const blogCategoriesRelations = relations(blogCategories, ({many}) => ({
+	blogPosts: many(blogPosts),
+}));
+
+export const adImpressionsRelations = relations(adImpressions, ({one}) => ({
+	adCampaign: one(adCampaigns, {
+		fields: [adImpressions.campaignId],
+		references: [adCampaigns.id]
+	}),
+}));
+
+export const adCampaignsRelations = relations(adCampaigns, ({one, many}) => ({
+	adImpressions: many(adImpressions),
+	business: one(businesses, {
+		fields: [adCampaigns.businessId],
+		references: [businesses.id]
+	}),
+	place: one(places, {
+		fields: [adCampaigns.placeId],
+		references: [places.id]
+	}),
+	adPackage: one(adPackages, {
+		fields: [adCampaigns.packageId],
+		references: [adPackages.id]
+	}),
+}));
+
+export const businessesRelations = relations(businesses, ({one, many}) => ({
+	adCampaigns: many(adCampaigns),
+	auditLogs: many(auditLogs),
+	businessNotifications: many(businessNotifications),
+	user: one(users, {
+		fields: [businesses.userId],
+		references: [users.id]
+	}),
+	subscriptionPlan: one(subscriptionPlans, {
+		fields: [businesses.planKey],
+		references: [subscriptionPlans.key]
+	}),
+	businessPhotos: many(businessPhotos),
+	creditTransactions: many(creditTransactions),
+	messageThreads: many(messageThreads),
+	leads: many(leads),
+	pageViews: many(pageViews),
+	reviews: many(reviews),
+	places: many(places),
+	notificationLogs: many(notificationLogs),
+}));
+
+export const placesRelations = relations(places, ({one, many}) => ({
+	adCampaigns: many(adCampaigns),
+	businessNotifications: many(businessNotifications),
+	businessPhotos: many(businessPhotos),
+	karmaEvents: many(karmaEvents),
+	creditTransactions: many(creditTransactions),
+	messageThreads: many(messageThreads),
+	leads: many(leads),
+	pageViews: many(pageViews),
+	placeRefreshJobs: many(placeRefreshJobs),
+	reviewPhotos: many(reviewPhotos),
+	reviews: many(reviews),
+	placeClaims: many(placeClaims),
+	user: one(users, {
+		fields: [places.ownerId],
+		references: [users.id]
+	}),
+	business: one(businesses, {
+		fields: [places.businessId],
+		references: [businesses.id]
+	}),
+	city: one(cities, {
+		fields: [places.cityId],
+		references: [cities.id]
+	}),
+	userFavorites: many(userFavorites),
+	userRecentViews: many(userRecentViews),
+	placeCategories: many(placeCategories),
+}));
+
+export const adPackagesRelations = relations(adPackages, ({many}) => ({
+	adCampaigns: many(adCampaigns),
+}));
+
+export const adminAuditLogsRelations = relations(adminAuditLogs, ({one}) => ({
+	user: one(users, {
+		fields: [adminAuditLogs.adminId],
+		references: [users.id]
+	}),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({one}) => ({
+	user: one(users, {
+		fields: [auditLogs.actorUserId],
+		references: [users.id]
+	}),
+	business: one(businesses, {
+		fields: [auditLogs.actorBusinessId],
+		references: [businesses.id]
+	}),
+}));
+
+export const businessNotificationsRelations = relations(businessNotifications, ({one}) => ({
+	business: one(businesses, {
+		fields: [businessNotifications.businessId],
+		references: [businesses.id]
+	}),
+	place: one(places, {
+		fields: [businessNotifications.relatedPlaceId],
+		references: [places.id]
+	}),
+	review: one(reviews, {
+		fields: [businessNotifications.relatedReviewId],
+		references: [reviews.id]
+	}),
+	lead: one(leads, {
+		fields: [businessNotifications.relatedLeadId],
+		references: [leads.id]
+	}),
+}));
+
+export const reviewsRelations = relations(reviews, ({one, many}) => ({
+	businessNotifications: many(businessNotifications),
+	karmaEvents: many(karmaEvents),
+	reviewPhotos: many(reviewPhotos),
+	place: one(places, {
+		fields: [reviews.placeId],
+		references: [places.id]
+	}),
+	business: one(businesses, {
+		fields: [reviews.businessId],
+		references: [businesses.id]
+	}),
+	user: one(users, {
+		fields: [reviews.userId],
+		references: [users.id]
+	}),
+	reviewReplies: many(reviewReplies),
+}));
+
+export const leadsRelations = relations(leads, ({one, many}) => ({
+	businessNotifications: many(businessNotifications),
+	creditTransactions: many(creditTransactions, {
+		relationName: "creditTransactions_leadId_leads_id"
+	}),
+	place: one(places, {
+		fields: [leads.placeId],
+		references: [places.id]
+	}),
+	business: one(businesses, {
+		fields: [leads.businessId],
+		references: [businesses.id]
+	}),
+	creditTransaction: one(creditTransactions, {
+		fields: [leads.chargedTransactionId],
+		references: [creditTransactions.id],
+		relationName: "leads_chargedTransactionId_creditTransactions_id"
+	}),
+}));
+
+export const subscriptionPlansRelations = relations(subscriptionPlans, ({many}) => ({
+	businesses: many(businesses),
+}));
+
+export const businessPhotosRelations = relations(businessPhotos, ({one}) => ({
+	place: one(places, {
+		fields: [businessPhotos.placeId],
+		references: [places.id]
+	}),
+	business: one(businesses, {
+		fields: [businessPhotos.businessId],
+		references: [businesses.id]
+	}),
+	user: one(users, {
+		fields: [businessPhotos.uploadedBy],
+		references: [users.id]
+	}),
+}));
+
+export const karmaEventsRelations = relations(karmaEvents, ({one}) => ({
+	user: one(users, {
+		fields: [karmaEvents.userId],
+		references: [users.id]
+	}),
+	review: one(reviews, {
+		fields: [karmaEvents.reviewId],
+		references: [reviews.id]
+	}),
+	place: one(places, {
+		fields: [karmaEvents.placeId],
+		references: [places.id]
+	}),
+	badgeDefinition: one(badgeDefinitions, {
+		fields: [karmaEvents.badgeKey],
+		references: [badgeDefinitions.key]
+	}),
+}));
+
+export const badgeDefinitionsRelations = relations(badgeDefinitions, ({many}) => ({
+	karmaEvents: many(karmaEvents),
+	userBadges: many(userBadges),
+}));
+
+export const messagesRelations = relations(messages, ({one, many}) => ({
+	messageThread: one(messageThreads, {
+		fields: [messages.threadId],
+		references: [messageThreads.id]
+	}),
+	user: one(users, {
+		fields: [messages.senderUserId],
+		references: [users.id]
+	}),
+	messageAttachments: many(messageAttachments),
+}));
+
+export const messageThreadsRelations = relations(messageThreads, ({one, many}) => ({
+	messages: many(messages),
+	business: one(businesses, {
+		fields: [messageThreads.businessId],
+		references: [businesses.id]
+	}),
+	user: one(users, {
+		fields: [messageThreads.userId],
+		references: [users.id]
+	}),
+	place: one(places, {
+		fields: [messageThreads.placeId],
+		references: [places.id]
+	}),
+}));
+
+export const creditTransactionsRelations = relations(creditTransactions, ({one, many}) => ({
+	business: one(businesses, {
+		fields: [creditTransactions.businessId],
+		references: [businesses.id]
+	}),
+	lead: one(leads, {
+		fields: [creditTransactions.leadId],
+		references: [leads.id],
+		relationName: "creditTransactions_leadId_leads_id"
+	}),
+	place: one(places, {
+		fields: [creditTransactions.placeId],
+		references: [places.id]
+	}),
+	leads: many(leads, {
+		relationName: "leads_chargedTransactionId_creditTransactions_id"
+	}),
+}));
+
+export const notificationSettingsRelations = relations(notificationSettings, ({one}) => ({
+	user: one(users, {
+		fields: [notificationSettings.userId],
+		references: [users.id]
+	}),
+}));
+
+export const pageViewsRelations = relations(pageViews, ({one}) => ({
+	place: one(places, {
+		fields: [pageViews.placeId],
+		references: [places.id]
+	}),
+	business: one(businesses, {
+		fields: [pageViews.businessId],
+		references: [businesses.id]
+	}),
+}));
+
+export const placeRefreshJobsRelations = relations(placeRefreshJobs, ({one}) => ({
+	place: one(places, {
+		fields: [placeRefreshJobs.placeId],
+		references: [places.id]
+	}),
+}));
+
+export const reviewPhotosRelations = relations(reviewPhotos, ({one}) => ({
+	review: one(reviews, {
+		fields: [reviewPhotos.reviewId],
+		references: [reviews.id]
+	}),
+	place: one(places, {
+		fields: [reviewPhotos.placeId],
+		references: [places.id]
+	}),
+	user: one(users, {
+		fields: [reviewPhotos.userId],
+		references: [users.id]
+	}),
+}));
+
+export const placeClaimsRelations = relations(placeClaims, ({one}) => ({
+	place: one(places, {
+		fields: [placeClaims.placeId],
+		references: [places.id]
+	}),
+	user_userId: one(users, {
+		fields: [placeClaims.userId],
+		references: [users.id],
+		relationName: "placeClaims_userId_users_id"
+	}),
+	user_reviewedBy: one(users, {
+		fields: [placeClaims.reviewedBy],
+		references: [users.id],
+		relationName: "placeClaims_reviewedBy_users_id"
+	}),
+}));
+
+export const reviewRepliesRelations = relations(reviewReplies, ({one}) => ({
+	review: one(reviews, {
+		fields: [reviewReplies.reviewId],
+		references: [reviews.id]
+	}),
+	user: one(users, {
+		fields: [reviewReplies.authorUserId],
+		references: [users.id]
+	}),
+}));
+
+export const provincesRelations = relations(provinces, ({one, many}) => ({
+	country: one(countries, {
+		fields: [provinces.countryId],
+		references: [countries.id]
+	}),
+	cities: many(cities),
+}));
+
+export const countriesRelations = relations(countries, ({many}) => ({
+	provinces: many(provinces),
+	cities: many(cities),
+}));
+
+export const citiesRelations = relations(cities, ({one, many}) => ({
+	places: many(places),
+	country: one(countries, {
+		fields: [cities.countryId],
+		references: [countries.id]
+	}),
+	province: one(provinces, {
+		fields: [cities.provinceId],
+		references: [provinces.id]
+	}),
+}));
+
+export const messageAttachmentsRelations = relations(messageAttachments, ({one}) => ({
+	message: one(messages, {
+		fields: [messageAttachments.messageId],
+		references: [messages.id]
+	}),
+}));
+
+export const notificationLogsRelations = relations(notificationLogs, ({one}) => ({
+	user: one(users, {
+		fields: [notificationLogs.userId],
+		references: [users.id]
+	}),
+	business: one(businesses, {
+		fields: [notificationLogs.businessId],
+		references: [businesses.id]
+	}),
+}));
+
+export const userBadgesRelations = relations(userBadges, ({one}) => ({
+	user: one(users, {
+		fields: [userBadges.userId],
+		references: [users.id]
+	}),
+	badgeDefinition: one(badgeDefinitions, {
+		fields: [userBadges.badgeKey],
+		references: [badgeDefinitions.key]
+	}),
+}));
+
+export const userFavoritesRelations = relations(userFavorites, ({one}) => ({
+	user: one(users, {
+		fields: [userFavorites.userId],
+		references: [users.id]
+	}),
+	place: one(places, {
+		fields: [userFavorites.placeId],
+		references: [places.id]
+	}),
+}));
+
+export const userRecentViewsRelations = relations(userRecentViews, ({one}) => ({
+	user: one(users, {
+		fields: [userRecentViews.userId],
+		references: [users.id]
+	}),
+	place: one(places, {
+		fields: [userRecentViews.placeId],
+		references: [places.id]
+	}),
+}));
+
+export const placeCategoriesRelations = relations(placeCategories, ({one}) => ({
+	place: one(places, {
+		fields: [placeCategories.placeId],
+		references: [places.id]
+	}),
+	category: one(categories, {
+		fields: [placeCategories.categoryId],
+		references: [categories.id]
+	}),
+}));
+
+export const categoriesRelations = relations(categories, ({many}) => ({
+	placeCategories: many(placeCategories),
+}));
+
+export const blogPostTagsRelations = relations(blogPostTags, ({one}) => ({
+	blogPost: one(blogPosts, {
+		fields: [blogPostTags.postId],
+		references: [blogPosts.id]
+	}),
+	blogTag: one(blogTags, {
+		fields: [blogPostTags.tagId],
+		references: [blogTags.id]
+	}),
+}));
+
+export const blogTagsRelations = relations(blogTags, ({many}) => ({
+	blogPostTags: many(blogPostTags),
+}));

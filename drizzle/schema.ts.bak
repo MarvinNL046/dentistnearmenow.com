@@ -1,0 +1,1169 @@
+import { pgTable, unique, serial, varchar, text, integer, boolean, timestamp, index, foreignKey, uniqueIndex, jsonb, type AnyPgColumn, date, numeric, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
+
+export const adCampaignStatus = pgEnum("ad_campaign_status", ['draft', 'pending_payment', 'active', 'paused', 'completed', 'cancelled'])
+export const adPlacementType = pgEnum("ad_placement_type", ['blog_sidebar', 'blog_inline', 'directory_sidebar', 'search_results', 'homepage_featured'])
+export const badgeCategory = pgEnum("badge_category", ['general', 'reviewer', 'contributor', 'business', 'special'])
+export const blogPostStatus = pgEnum("blog_post_status", ['draft', 'published', 'archived'])
+export const businessPhotoStatus = pgEnum("business_photo_status", ['active', 'deleted'])
+export const claimStatus = pgEnum("claim_status", ['pending', 'verification_sent', 'verified', 'approved', 'rejected', 'expired'])
+export const claimVerificationMethod = pgEnum("claim_verification_method", ['email_domain', 'phone', 'google_business', 'document', 'manual'])
+export const inAppNotificationType = pgEnum("in_app_notification_type", ['new_review', 'new_lead', 'review_reply', 'listing_view', 'claim_approved', 'claim_rejected', 'plan_upgraded', 'plan_expiring', 'weekly_summary', 'system'])
+export const notificationLogStatus = pgEnum("notification_log_status", ['sent', 'failed'])
+export const placeStatus = pgEnum("place_status", ['active', 'temporarily_closed', 'permanently_closed', 'unknown'])
+export const planStatus = pgEnum("plan_status", ['ACTIVE', 'CANCELLED', 'TRIAL', 'PAST_DUE', 'INACTIVE'])
+export const refreshJobStatus = pgEnum("refresh_job_status", ['pending', 'in_progress', 'done', 'failed'])
+export const reviewPhotoStatus = pgEnum("review_photo_status", ['pending', 'approved', 'rejected', 'flagged'])
+export const reviewReplyAuthorType = pgEnum("review_reply_author_type", ['business', 'admin'])
+export const reviewStatus = pgEnum("review_status", ['pending', 'published', 'rejected', 'flagged'])
+
+
+export const adPackages = pgTable("ad_packages", {
+	id: serial().primaryKey().notNull(),
+	key: varchar({ length: 50 }).notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	nameNl: varchar("name_nl", { length: 100 }),
+	description: text(),
+	descriptionNl: text("description_nl"),
+	priceCents: integer("price_cents").notNull(),
+	durationDays: integer("duration_days").notNull(),
+	includedPlacements: varchar("included_placements", { length: 255 }).notNull(),
+	maxImpressions: integer("max_impressions"),
+	stripePriceId: varchar("stripe_price_id", { length: 255 }),
+	isPopular: boolean("is_popular").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("ad_packages_key_unique").on(table.key),
+]);
+
+export const blogPosts = pgTable("blog_posts", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	authorId: integer("author_id"),
+	authorName: varchar("author_name", { length: 100 }),
+	categoryId: integer("category_id"),
+	status: blogPostStatus().default('draft').notNull(),
+	featuredImage: varchar("featured_image", { length: 500 }),
+	featuredImageAlt: varchar("featured_image_alt", { length: 255 }),
+	titleEn: varchar("title_en", { length: 255 }).notNull(),
+	excerptEn: text("excerpt_en"),
+	contentEn: text("content_en").notNull(),
+	titleNl: varchar("title_nl", { length: 255 }),
+	excerptNl: text("excerpt_nl"),
+	contentNl: text("content_nl"),
+	titleDe: varchar("title_de", { length: 255 }),
+	excerptDe: text("excerpt_de"),
+	contentDe: text("content_de"),
+	titleFr: varchar("title_fr", { length: 255 }),
+	excerptFr: text("excerpt_fr"),
+	contentFr: text("content_fr"),
+	metaTitleEn: varchar("meta_title_en", { length: 60 }),
+	metaDescriptionEn: varchar("meta_description_en", { length: 160 }),
+	metaTitleNl: varchar("meta_title_nl", { length: 60 }),
+	metaDescriptionNl: varchar("meta_description_nl", { length: 160 }),
+	metaTitleDe: varchar("meta_title_de", { length: 60 }),
+	metaDescriptionDe: varchar("meta_description_de", { length: 160 }),
+	metaTitleFr: varchar("meta_title_fr", { length: 60 }),
+	metaDescriptionFr: varchar("meta_description_fr", { length: 160 }),
+	readingTimeMinutes: integer("reading_time_minutes").default(5),
+	viewCount: integer("view_count").default(0).notNull(),
+	publishedAt: timestamp("published_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("blog_posts_author_id_idx").using("btree", table.authorId.asc().nullsLast().op("int4_ops")),
+	index("blog_posts_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("int4_ops")),
+	index("blog_posts_published_at_idx").using("btree", table.publishedAt.asc().nullsLast().op("timestamp_ops")),
+	index("blog_posts_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("blog_posts_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.authorId],
+			foreignColumns: [users.id],
+			name: "blog_posts_author_id_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.categoryId],
+			foreignColumns: [blogCategories.id],
+			name: "blog_posts_category_id_blog_categories_id_fk"
+		}).onDelete("set null"),
+	unique("blog_posts_slug_unique").on(table.slug),
+]);
+
+export const adImpressions = pgTable("ad_impressions", {
+	id: serial().primaryKey().notNull(),
+	campaignId: integer("campaign_id").notNull(),
+	placement: adPlacementType().notNull(),
+	pageUrl: varchar("page_url", { length: 500 }),
+	locale: varchar({ length: 5 }),
+	sessionId: varchar("session_id", { length: 100 }),
+	userAgent: varchar("user_agent", { length: 500 }),
+	ipCountry: varchar("ip_country", { length: 2 }),
+	clicked: boolean().default(false).notNull(),
+	clickedAt: timestamp("clicked_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ad_impressions_campaign_idx").using("btree", table.campaignId.asc().nullsLast().op("int4_ops")),
+	index("ad_impressions_date_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+			columns: [table.campaignId],
+			foreignColumns: [adCampaigns.id],
+			name: "ad_impressions_campaign_id_ad_campaigns_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const aiContentCache = pgTable("ai_content_cache", {
+	id: serial().primaryKey().notNull(),
+	key: text().notNull(),
+	contentType: varchar("content_type", { length: 50 }).notNull(),
+	content: jsonb().notNull(),
+	model: varchar({ length: 100 }).notNull(),
+	locale: varchar({ length: 10 }).notNull(),
+	version: varchar({ length: 50 }).notNull(),
+	promptTokens: integer("prompt_tokens"),
+	completionTokens: integer("completion_tokens"),
+	generatedAt: timestamp("generated_at", { mode: 'string' }).defaultNow().notNull(),
+	generationTimeMs: integer("generation_time_ms"),
+	isStale: boolean("is_stale").default(false).notNull(),
+	markedStaleAt: timestamp("marked_stale_at", { mode: 'string' }),
+	lastError: text("last_error"),
+	errorCount: integer("error_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ai_content_cache_content_type_idx").using("btree", table.contentType.asc().nullsLast().op("text_ops")),
+	uniqueIndex("ai_content_cache_key_idx").using("btree", table.key.asc().nullsLast().op("text_ops")),
+	index("ai_content_cache_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),
+	index("ai_content_cache_stale_idx").using("btree", table.isStale.asc().nullsLast().op("bool_ops"), table.updatedAt.asc().nullsLast().op("timestamp_ops")),
+	index("ai_content_cache_version_idx").using("btree", table.version.asc().nullsLast().op("text_ops")),
+	unique("ai_content_cache_key_unique").on(table.key),
+]);
+
+export const aiGenerationQueue = pgTable("ai_generation_queue", {
+	id: serial().primaryKey().notNull(),
+	cacheKey: text("cache_key").notNull(),
+	contentType: varchar("content_type", { length: 50 }).notNull(),
+	locale: varchar({ length: 10 }).notNull(),
+	priority: integer().default(0).notNull(),
+	status: varchar({ length: 20 }).default('pending').notNull(),
+	attempts: integer().default(0).notNull(),
+	lastAttemptAt: timestamp("last_attempt_at", { mode: 'string' }),
+	completedAt: timestamp("completed_at", { mode: 'string' }),
+	error: text(),
+	contextData: jsonb("context_data"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ai_generation_queue_cache_key_idx").using("btree", table.cacheKey.asc().nullsLast().op("text_ops")),
+	index("ai_generation_queue_status_priority_idx").using("btree", table.status.asc().nullsLast().op("int4_ops"), table.priority.asc().nullsLast().op("int4_ops")),
+]);
+
+export const blogCategories = pgTable("blog_categories", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	nameEn: varchar("name_en", { length: 100 }).notNull(),
+	nameNl: varchar("name_nl", { length: 100 }),
+	nameDe: varchar("name_de", { length: 100 }),
+	nameFr: varchar("name_fr", { length: 100 }),
+	descriptionEn: text("description_en"),
+	descriptionNl: text("description_nl"),
+	descriptionDe: text("description_de"),
+	descriptionFr: text("description_fr"),
+	icon: varchar({ length: 50 }),
+	color: varchar({ length: 20 }),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	metaTitleEn: varchar("meta_title_en", { length: 60 }),
+	metaDescriptionEn: varchar("meta_description_en", { length: 160 }),
+	metaTitleNl: varchar("meta_title_nl", { length: 60 }),
+	metaDescriptionNl: varchar("meta_description_nl", { length: 160 }),
+	metaTitleDe: varchar("meta_title_de", { length: 60 }),
+	metaDescriptionDe: varchar("meta_description_de", { length: 160 }),
+	metaTitleFr: varchar("meta_title_fr", { length: 60 }),
+	metaDescriptionFr: varchar("meta_description_fr", { length: 160 }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("blog_categories_slug_unique").on(table.slug),
+]);
+
+export const adCampaigns = pgTable("ad_campaigns", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	placeId: integer("place_id"),
+	packageId: integer("package_id").notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	status: adCampaignStatus().default('draft').notNull(),
+	headline: varchar({ length: 100 }).notNull(),
+	headlineNl: varchar("headline_nl", { length: 100 }),
+	description: varchar({ length: 255 }),
+	descriptionNl: varchar("description_nl", { length: 255 }),
+	imageUrl: varchar("image_url", { length: 500 }),
+	ctaText: varchar("cta_text", { length: 50 }).default('Learn More'),
+	ctaTextNl: varchar("cta_text_nl", { length: 50 }).default('Meer informatie'),
+	destinationUrl: varchar("destination_url", { length: 500 }),
+	startsAt: timestamp("starts_at", { mode: 'string' }),
+	endsAt: timestamp("ends_at", { mode: 'string' }),
+	totalBudgetCents: integer("total_budget_cents"),
+	maxImpressions: integer("max_impressions"),
+	impressions: integer().default(0).notNull(),
+	clicks: integer().default(0).notNull(),
+	stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
+	stripeCheckoutSessionId: varchar("stripe_checkout_session_id", { length: 255 }),
+	paidAt: timestamp("paid_at", { mode: 'string' }),
+	amountPaidCents: integer("amount_paid_cents"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ad_campaigns_active_idx").using("btree", table.status.asc().nullsLast().op("enum_ops"), table.startsAt.asc().nullsLast().op("enum_ops"), table.endsAt.asc().nullsLast().op("enum_ops")),
+	index("ad_campaigns_business_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("ad_campaigns_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "ad_campaigns_business_id_businesses_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "ad_campaigns_place_id_places_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.packageId],
+			foreignColumns: [adPackages.id],
+			name: "ad_campaigns_package_id_ad_packages_id_fk"
+		}).onDelete("restrict"),
+]);
+
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+	id: serial().primaryKey().notNull(),
+	adminId: integer("admin_id").notNull(),
+	action: varchar({ length: 100 }).notNull(),
+	entityType: varchar("entity_type", { length: 50 }).notNull(),
+	entityId: integer("entity_id"),
+	details: text(),
+	ipAddress: varchar("ip_address", { length: 45 }),
+	userAgent: varchar("user_agent", { length: 500 }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.adminId],
+			foreignColumns: [users.id],
+			name: "admin_audit_logs_admin_id_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const auditLogs = pgTable("audit_logs", {
+	id: serial().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	actorUserId: integer("actor_user_id"),
+	actorBusinessId: integer("actor_business_id"),
+	actorRole: varchar("actor_role", { length: 30 }).notNull(),
+	eventType: varchar("event_type", { length: 50 }).notNull(),
+	targetType: varchar("target_type", { length: 30 }).notNull(),
+	targetId: varchar("target_id", { length: 100 }),
+	metadata: jsonb(),
+	ipAddress: varchar("ip_address", { length: 45 }),
+}, (table) => [
+	index("audit_logs_actor_user_id_idx").using("btree", table.actorUserId.asc().nullsLast().op("int4_ops")),
+	index("audit_logs_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("audit_logs_event_type_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
+	index("audit_logs_target_type_idx").using("btree", table.targetType.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.actorUserId],
+			foreignColumns: [users.id],
+			name: "audit_logs_actor_user_id_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.actorBusinessId],
+			foreignColumns: [businesses.id],
+			name: "audit_logs_actor_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const blogTags = pgTable("blog_tags", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	nameEn: varchar("name_en", { length: 100 }).notNull(),
+	nameNl: varchar("name_nl", { length: 100 }),
+	nameDe: varchar("name_de", { length: 100 }),
+	nameFr: varchar("name_fr", { length: 100 }),
+	postCount: integer("post_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("blog_tags_slug_unique").on(table.slug),
+]);
+
+export const badgeDefinitions = pgTable("badge_definitions", {
+	key: varchar({ length: 50 }).primaryKey().notNull(),
+	label: varchar({ length: 100 }).notNull(),
+	labelNl: varchar("label_nl", { length: 100 }),
+	description: text().notNull(),
+	descriptionNl: text("description_nl"),
+	icon: varchar({ length: 50 }).notNull(),
+	category: varchar({ length: 50 }).default('general').notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+});
+
+export const countries = pgTable("countries", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 3 }).notNull(),
+	name: varchar({ length: 255 }).notNull(),
+}, (table) => [
+	unique("countries_slug_unique").on(table.slug),
+	unique("countries_code_unique").on(table.code),
+]);
+
+export const businessNotifications = pgTable("business_notifications", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	type: inAppNotificationType().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	message: text().notNull(),
+	relatedPlaceId: integer("related_place_id"),
+	relatedReviewId: integer("related_review_id"),
+	relatedLeadId: integer("related_lead_id"),
+	actionUrl: varchar("action_url", { length: 500 }),
+	isRead: boolean("is_read").default(false).notNull(),
+	readAt: timestamp("read_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("business_notifications_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("business_notifications_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("business_notifications_is_read_idx").using("btree", table.isRead.asc().nullsLast().op("bool_ops")),
+	index("business_notifications_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "business_notifications_business_id_businesses_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.relatedPlaceId],
+			foreignColumns: [places.id],
+			name: "business_notifications_related_place_id_places_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.relatedReviewId],
+			foreignColumns: [reviews.id],
+			name: "business_notifications_related_review_id_reviews_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.relatedLeadId],
+			foreignColumns: [leads.id],
+			name: "business_notifications_related_lead_id_leads_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const categories = pgTable("categories", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	icon: varchar({ length: 100 }),
+	labelKey: varchar("label_key", { length: 255 }).notNull(),
+}, (table) => [
+	unique("categories_slug_unique").on(table.slug),
+]);
+
+export const businesses = pgTable("businesses", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	slug: varchar({ length: 255 }),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	website: varchar({ length: 500 }),
+	logo: varchar({ length: 500 }),
+	contactEmail: varchar("contact_email", { length: 255 }),
+	contactPhone: varchar("contact_phone", { length: 50 }),
+	status: varchar({ length: 20 }).default('active').notNull(),
+	plan: varchar({ length: 20 }).default('free').notNull(),
+	billingStatus: varchar("billing_status", { length: 20 }).default('trial').notNull(),
+	planKey: varchar("plan_key", { length: 20 }).default('FREE').notNull(),
+	planStatus: planStatus("plan_status").default('ACTIVE').notNull(),
+	planStartedAt: timestamp("plan_started_at", { mode: 'string' }),
+	planValidUntil: timestamp("plan_valid_until", { mode: 'string' }),
+	trialEndsAt: timestamp("trial_ends_at", { mode: 'string' }),
+	stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+	stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+	creditBalanceCents: integer("credit_balance_cents").default(0).notNull(),
+	leadPriceCents: integer("lead_price_cents"),
+	autoChargeEnabled: boolean("auto_charge_enabled").default(true).notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "businesses_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.planKey],
+			foreignColumns: [subscriptionPlans.key],
+			name: "businesses_plan_key_subscription_plans_key_fk"
+		}),
+	unique("businesses_slug_unique").on(table.slug),
+]);
+
+export const businessPhotos = pgTable("business_photos", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	businessId: integer("business_id").notNull(),
+	uploadedBy: integer("uploaded_by"),
+	storageKey: varchar("storage_key", { length: 500 }).notNull(),
+	width: integer(),
+	height: integer(),
+	sizeBytes: integer("size_bytes"),
+	mimeType: varchar("mime_type", { length: 50 }),
+	altText: varchar("alt_text", { length: 255 }),
+	caption: varchar({ length: 500 }),
+	isPrimary: boolean("is_primary").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	status: businessPhotoStatus().default('active').notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("business_photos_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("business_photos_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("business_photos_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "business_photos_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "business_photos_business_id_businesses_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.uploadedBy],
+			foreignColumns: [users.id],
+			name: "business_photos_uploaded_by_users_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const karmaEvents = pgTable("karma_events", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	eventType: varchar("event_type", { length: 50 }).notNull(),
+	points: integer().notNull(),
+	description: varchar({ length: 255 }),
+	reviewId: integer("review_id"),
+	placeId: integer("place_id"),
+	badgeKey: varchar("badge_key", { length: 50 }),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("karma_events_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("karma_events_event_type_idx").using("btree", table.eventType.asc().nullsLast().op("text_ops")),
+	index("karma_events_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "karma_events_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.reviewId],
+			foreignColumns: [reviews.id],
+			name: "karma_events_review_id_reviews_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "karma_events_place_id_places_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.badgeKey],
+			foreignColumns: [badgeDefinitions.key],
+			name: "karma_events_badge_key_badge_definitions_key_fk"
+		}).onDelete("set null"),
+]);
+
+export const messages = pgTable("messages", {
+	id: serial().primaryKey().notNull(),
+	threadId: integer("thread_id").notNull(),
+	senderType: varchar("sender_type", { length: 20 }).notNull(),
+	senderUserId: integer("sender_user_id"),
+	body: text().notNull(),
+	isRead: boolean("is_read").default(false).notNull(),
+	readAt: timestamp("read_at", { mode: 'string' }),
+	deletedBySender: boolean("deleted_by_sender").default(false).notNull(),
+	deletedByRecipient: boolean("deleted_by_recipient").default(false).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("messages_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("messages_thread_id_idx").using("btree", table.threadId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.threadId],
+			foreignColumns: [messageThreads.id],
+			name: "messages_thread_id_message_threads_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.senderUserId],
+			foreignColumns: [users.id],
+			name: "messages_sender_user_id_users_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const creditTransactions = pgTable("credit_transactions", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	amountCents: integer("amount_cents").notNull(),
+	type: varchar({ length: 30 }).notNull(),
+	description: varchar({ length: 500 }),
+	stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
+	stripeInvoiceId: varchar("stripe_invoice_id", { length: 255 }),
+	leadId: integer("lead_id"),
+	placeId: integer("place_id"),
+	metadata: jsonb(),
+	balanceAfterCents: integer("balance_after_cents").notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "credit_transactions_business_id_businesses_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.leadId],
+			foreignColumns: [leads.id],
+			name: "credit_transactions_lead_id_leads_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "credit_transactions_place_id_places_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const messageThreads = pgTable("message_threads", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	userId: integer("user_id").notNull(),
+	placeId: integer("place_id"),
+	subject: varchar({ length: 255 }),
+	status: varchar({ length: 20 }).default('open').notNull(),
+	lastMessageAt: timestamp("last_message_at", { mode: 'string' }).defaultNow().notNull(),
+	lastMessagePreview: varchar("last_message_preview", { length: 255 }),
+	unreadCountBusiness: integer("unread_count_business").default(0).notNull(),
+	unreadCountUser: integer("unread_count_user").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("message_threads_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("message_threads_last_message_at_idx").using("btree", table.lastMessageAt.asc().nullsLast().op("timestamp_ops")),
+	index("message_threads_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "message_threads_business_id_businesses_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "message_threads_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "message_threads_place_id_places_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const leads = pgTable("leads", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	businessId: integer("business_id"),
+	name: varchar({ length: 255 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 50 }),
+	message: text(),
+	source: varchar({ length: 100 }),
+	status: varchar({ length: 20 }).default('new').notNull(),
+	viewedAt: timestamp("viewed_at", { mode: 'string' }),
+	priceCents: integer("price_cents"),
+	chargedAt: timestamp("charged_at", { mode: 'string' }),
+	chargedTransactionId: integer("charged_transaction_id"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("leads_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("leads_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("leads_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "leads_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "leads_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.chargedTransactionId],
+			foreignColumns: [creditTransactions.id],
+			name: "leads_charged_transaction_id_credit_transactions_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const notificationSettings = pgTable("notification_settings", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	emailGeneral: boolean("email_general").default(true).notNull(),
+	emailReviews: boolean("email_reviews").default(true).notNull(),
+	emailFavorites: boolean("email_favorites").default(true).notNull(),
+	emailLeads: boolean("email_leads").default(true).notNull(),
+	emailBusiness: boolean("email_business").default(true).notNull(),
+	emailDigest: boolean("email_digest").default(true).notNull(),
+	locale: varchar({ length: 10 }),
+	quietHoursEnabled: boolean("quiet_hours_enabled").default(false).notNull(),
+	quietHoursStart: integer("quiet_hours_start").default(22),
+	quietHoursEnd: integer("quiet_hours_end").default(8),
+	timezone: varchar({ length: 50 }),
+	maxEmailsPerWeek: integer("max_emails_per_week").default(50),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "notification_settings_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	unique("notification_settings_user_id_unique").on(table.userId),
+]);
+
+export const pageViews = pgTable("page_views", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	businessId: integer("business_id"),
+	sessionId: varchar("session_id", { length: 64 }),
+	source: varchar({ length: 100 }),
+	referrer: varchar({ length: 500 }),
+	deviceType: varchar("device_type", { length: 20 }),
+	locale: varchar({ length: 10 }),
+	viewedAt: timestamp("viewed_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("page_views_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("page_views_place_date_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops"), table.viewedAt.asc().nullsLast().op("timestamp_ops")),
+	index("page_views_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("page_views_viewed_at_idx").using("btree", table.viewedAt.asc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "page_views_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "page_views_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const placeRefreshJobs = pgTable("place_refresh_jobs", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	status: refreshJobStatus().default('pending').notNull(),
+	reason: varchar({ length: 50 }).notNull(),
+	priority: integer().default(0).notNull(),
+	lastError: text("last_error"),
+	attemptCount: integer("attempt_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+	startedAt: timestamp("started_at", { mode: 'string' }),
+	completedAt: timestamp("completed_at", { mode: 'string' }),
+}, (table) => [
+	index("place_refresh_jobs_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("place_refresh_jobs_priority_idx").using("btree", table.priority.asc().nullsLast().op("int4_ops")),
+	index("place_refresh_jobs_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "place_refresh_jobs_place_id_places_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const reviewPhotos = pgTable("review_photos", {
+	id: serial().primaryKey().notNull(),
+	reviewId: integer("review_id").notNull(),
+	placeId: integer("place_id").notNull(),
+	userId: integer("user_id"),
+	storageKey: varchar("storage_key", { length: 500 }).notNull(),
+	width: integer(),
+	height: integer(),
+	mimeType: varchar("mime_type", { length: 50 }).notNull(),
+	filesizeBytes: integer("filesize_bytes"),
+	altText: varchar("alt_text", { length: 255 }),
+	status: reviewPhotoStatus().default('pending').notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("review_photos_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("review_photos_review_id_idx").using("btree", table.reviewId.asc().nullsLast().op("int4_ops")),
+	index("review_photos_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.reviewId],
+			foreignColumns: [reviews.id],
+			name: "review_photos_review_id_reviews_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "review_photos_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "review_photos_user_id_users_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const reviews = pgTable("reviews", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	businessId: integer("business_id"),
+	userId: integer("user_id").notNull(),
+	rating: integer().notNull(),
+	title: varchar({ length: 255 }),
+	body: text().notNull(),
+	locale: varchar({ length: 10 }).default('en').notNull(),
+	status: reviewStatus().default('pending').notNull(),
+	isFeatured: boolean("is_featured").default(false).notNull(),
+	visitDate: date("visit_date"),
+	ipHash: varchar("ip_hash", { length: 64 }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("reviews_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("reviews_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("reviews_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("reviews_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "reviews_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "reviews_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "reviews_user_id_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const placeClaims = pgTable("place_claims", {
+	id: serial().primaryKey().notNull(),
+	placeId: integer("place_id").notNull(),
+	userId: integer("user_id").notNull(),
+	status: claimStatus().default('pending').notNull(),
+	verificationMethod: claimVerificationMethod("verification_method"),
+	verificationEmail: varchar("verification_email", { length: 255 }),
+	verificationEmailDomain: varchar("verification_email_domain", { length: 255 }),
+	verificationPhone: varchar("verification_phone", { length: 50 }),
+	verificationCode: varchar("verification_code", { length: 10 }),
+	verificationCodeSentAt: timestamp("verification_code_sent_at", { mode: 'string' }),
+	verificationCodeExpiresAt: timestamp("verification_code_expires_at", { mode: 'string' }),
+	verificationAttempts: integer("verification_attempts").default(0).notNull(),
+	verifiedAt: timestamp("verified_at", { mode: 'string' }),
+	googleBusinessId: varchar("google_business_id", { length: 255 }),
+	googleBusinessVerifiedAt: timestamp("google_business_verified_at", { mode: 'string' }),
+	proofDocumentUrl: varchar("proof_document_url", { length: 500 }),
+	proofDocumentType: varchar("proof_document_type", { length: 50 }),
+	businessRole: varchar("business_role", { length: 100 }),
+	claimantName: varchar("claimant_name", { length: 255 }),
+	claimantPhone: varchar("claimant_phone", { length: 50 }),
+	notes: text(),
+	adminNotes: text("admin_notes"),
+	rejectionReason: varchar("rejection_reason", { length: 500 }),
+	reviewedBy: integer("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("place_claims_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("place_claims_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("place_claims_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	index("place_claims_verification_code_idx").using("btree", table.verificationCode.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "place_claims_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "place_claims_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.reviewedBy],
+			foreignColumns: [users.id],
+			name: "place_claims_reviewed_by_users_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const reviewReplies = pgTable("review_replies", {
+	id: serial().primaryKey().notNull(),
+	reviewId: integer("review_id").notNull(),
+	authorType: reviewReplyAuthorType("author_type").notNull(),
+	authorUserId: integer("author_user_id").notNull(),
+	body: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("review_replies_review_id_idx").using("btree", table.reviewId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.reviewId],
+			foreignColumns: [reviews.id],
+			name: "review_replies_review_id_reviews_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.authorUserId],
+			foreignColumns: [users.id],
+			name: "review_replies_author_user_id_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const subscriptionPlans = pgTable("subscription_plans", {
+	key: varchar({ length: 20 }).primaryKey().notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	nameNl: varchar("name_nl", { length: 100 }),
+	description: text(),
+	descriptionNl: text("description_nl"),
+	monthlyPriceCents: integer("monthly_price_cents").default(0).notNull(),
+	yearlyPriceCents: integer("yearly_price_cents"),
+	maxPhotos: integer("max_photos").default(0).notNull(),
+	maxCategories: integer("max_categories").default(1).notNull(),
+	canShowWebsite: boolean("can_show_website").default(false).notNull(),
+	canShowEmail: boolean("can_show_email").default(false).notNull(),
+	canShowPhone: boolean("can_show_phone").default(false).notNull(),
+	canShowSocialLinks: boolean("can_show_social_links").default(false).notNull(),
+	canShowDescription: boolean("can_show_description").default(false).notNull(),
+	priorityRank: integer("priority_rank").default(1).notNull(),
+	hasFeaturedStyling: boolean("has_featured_styling").default(false).notNull(),
+	hasBasicAnalytics: boolean("has_basic_analytics").default(false).notNull(),
+	hasAdvancedAnalytics: boolean("has_advanced_analytics").default(false).notNull(),
+	showPlanBadge: boolean("show_plan_badge").default(false).notNull(),
+	badgeText: varchar("badge_text", { length: 50 }),
+	badgeColor: varchar("badge_color", { length: 20 }),
+	isPopular: boolean("is_popular").default(false).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+});
+
+export const provinces = pgTable("provinces", {
+	id: serial().primaryKey().notNull(),
+	countryId: integer("country_id").notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 10 }),
+	lat: numeric({ precision: 10, scale:  7 }),
+	lng: numeric({ precision: 10, scale:  7 }),
+	description: text(),
+	cityCount: integer("city_count").default(0).notNull(),
+	placeCount: integer("place_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("provinces_country_id_idx").using("btree", table.countryId.asc().nullsLast().op("int4_ops")),
+	index("provinces_slug_country_idx").using("btree", table.slug.asc().nullsLast().op("int4_ops"), table.countryId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.countryId],
+			foreignColumns: [countries.id],
+			name: "provinces_country_id_countries_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const trustLevelDefinitions = pgTable("trust_level_definitions", {
+	level: integer().primaryKey().notNull(),
+	name: varchar({ length: 50 }).notNull(),
+	nameNl: varchar("name_nl", { length: 50 }),
+	description: text().notNull(),
+	descriptionNl: text("description_nl"),
+	minKarma: integer("min_karma").default(0).notNull(),
+	icon: varchar({ length: 50 }),
+	color: varchar({ length: 20 }),
+	canReview: boolean("can_review").default(true).notNull(),
+	canUploadPhotos: boolean("can_upload_photos").default(true).notNull(),
+	maxPhotosPerReview: integer("max_photos_per_review").default(3),
+	reviewsAutoApproved: boolean("reviews_auto_approved").default(false).notNull(),
+	canFlagReviews: boolean("can_flag_reviews").default(false).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+});
+
+export const places = pgTable("places", {
+	id: serial().primaryKey().notNull(),
+	ownerId: integer("owner_id"),
+	businessId: integer("business_id"),
+	cityId: integer("city_id").notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	address: varchar({ length: 500 }),
+	postalCode: varchar("postal_code", { length: 20 }),
+	phone: varchar({ length: 50 }),
+	website: varchar({ length: 500 }),
+	email: varchar({ length: 255 }),
+	lat: numeric({ precision: 10, scale:  7 }),
+	lng: numeric({ precision: 10, scale:  7 }),
+	openingHours: jsonb("opening_hours"),
+	isVerified: boolean("is_verified").default(false).notNull(),
+	isPremium: boolean("is_premium").default(false).notNull(),
+	premiumSince: timestamp("premium_since", { mode: 'string' }),
+	premiumUntil: timestamp("premium_until", { mode: 'string' }),
+	premiumLevel: integer("premium_level").default(0).notNull(),
+	avgRating: numeric("avg_rating", { precision: 2, scale:  1 }).default('0'),
+	reviewCount: integer("review_count").default(0).notNull(),
+	lastReviewAt: timestamp("last_review_at", { mode: 'string' }),
+	hasPhotos: boolean("has_photos").default(false).notNull(),
+	isTopRated: boolean("is_top_rated").default(false).notNull(),
+	isCommunityFavorite: boolean("is_community_favorite").default(false).notNull(),
+	dataQualityScore: integer("data_quality_score").default(0).notNull(),
+	dataQualityFlags: jsonb("data_quality_flags"),
+	lastRefreshedAt: timestamp("last_refreshed_at", { mode: 'string' }),
+	scrapedContent: jsonb("scraped_content"),
+	status: placeStatus().default('active').notNull(),
+	statusLastCheckedAt: timestamp("status_last_checked_at", { mode: 'string' }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("places_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("places_city_id_idx").using("btree", table.cityId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.ownerId],
+			foreignColumns: [users.id],
+			name: "places_owner_id_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "places_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.cityId],
+			foreignColumns: [cities.id],
+			name: "places_city_id_cities_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const users = pgTable("users", {
+	id: serial().primaryKey().notNull(),
+	stackauthId: varchar("stackauth_id", { length: 255 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	emailVerified: boolean("email_verified").default(false).notNull(),
+	name: varchar({ length: 255 }),
+	role: varchar({ length: 50 }).default('user').notNull(),
+	username: varchar({ length: 50 }),
+	avatarUrl: text("avatar_url"),
+	bio: text(),
+	location: varchar({ length: 255 }),
+	websiteUrl: varchar("website_url", { length: 500 }),
+	socialLinks: jsonb("social_links").default({}),
+	preferredLocale: varchar("preferred_locale", { length: 10 }).default('en'),
+	isPublic: boolean("is_public").default(true),
+	karmaPoints: integer("karma_points").default(0).notNull(),
+	trustLevel: integer("trust_level").default(0).notNull(),
+	karmaUpdatedAt: timestamp("karma_updated_at", { mode: 'string' }).defaultNow(),
+	isExpert: boolean("is_expert").default(false).notNull(),
+	professionalTitle: varchar("professional_title", { length: 100 }),
+	credentials: jsonb().default([]),
+	expertiseAreas: jsonb("expertise_areas").default([]),
+	yearsExperience: integer("years_experience"),
+	expertVerifiedAt: timestamp("expert_verified_at", { mode: 'string' }),
+	expertVerifiedBy: integer("expert_verified_by"),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("users_stackauth_id_unique").on(table.stackauthId),
+	unique("users_email_unique").on(table.email),
+	unique("users_username_unique").on(table.username),
+]);
+
+export const cities = pgTable("cities", {
+	id: serial().primaryKey().notNull(),
+	countryId: integer("country_id").notNull(),
+	provinceId: integer("province_id"),
+	slug: varchar({ length: 255 }).notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	lat: numeric({ precision: 10, scale:  7 }),
+	lng: numeric({ precision: 10, scale:  7 }),
+}, (table) => [
+	index("cities_country_id_idx").using("btree", table.countryId.asc().nullsLast().op("int4_ops")),
+	index("cities_province_id_idx").using("btree", table.provinceId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.countryId],
+			foreignColumns: [countries.id],
+			name: "cities_country_id_countries_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.provinceId],
+			foreignColumns: [provinces.id],
+			name: "cities_province_id_provinces_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const messageAttachments = pgTable("message_attachments", {
+	id: serial().primaryKey().notNull(),
+	messageId: integer("message_id").notNull(),
+	filename: varchar({ length: 255 }).notNull(),
+	mimeType: varchar("mime_type", { length: 100 }).notNull(),
+	fileSizeBytes: integer("file_size_bytes"),
+	storageKey: varchar("storage_key", { length: 500 }).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("message_attachments_message_id_idx").using("btree", table.messageId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.messageId],
+			foreignColumns: [messages.id],
+			name: "message_attachments_message_id_messages_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const notificationLogs = pgTable("notification_logs", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id"),
+	businessId: integer("business_id"),
+	type: varchar({ length: 50 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	status: notificationLogStatus().notNull(),
+	error: text(),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("notification_logs_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("notification_logs_created_at_idx").using("btree", table.createdAt.asc().nullsLast().op("timestamp_ops")),
+	index("notification_logs_type_idx").using("btree", table.type.asc().nullsLast().op("text_ops")),
+	index("notification_logs_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "notification_logs_user_id_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses.id],
+			name: "notification_logs_business_id_businesses_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const userBadges = pgTable("user_badges", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	badgeKey: varchar("badge_key", { length: 50 }).notNull(),
+	awardedAt: timestamp("awarded_at", { mode: 'string' }).defaultNow().notNull(),
+	awardedBy: varchar("awarded_by", { length: 50 }),
+	notes: text(),
+}, (table) => [
+	index("user_badges_awarded_at_idx").using("btree", table.awardedAt.asc().nullsLast().op("timestamp_ops")),
+	index("user_badges_badge_key_idx").using("btree", table.badgeKey.asc().nullsLast().op("text_ops")),
+	index("user_badges_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_badges_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.badgeKey],
+			foreignColumns: [badgeDefinitions.key],
+			name: "user_badges_badge_key_badge_definitions_key_fk"
+		}).onDelete("cascade"),
+]);
+
+export const userFavorites = pgTable("user_favorites", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	placeId: integer("place_id").notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("user_favorites_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("user_favorites_unique_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops"), table.placeId.asc().nullsLast().op("int4_ops")),
+	index("user_favorites_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_favorites_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "user_favorites_place_id_places_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const userRecentViews = pgTable("user_recent_views", {
+	id: serial().primaryKey().notNull(),
+	userId: integer("user_id").notNull(),
+	placeId: integer("place_id").notNull(),
+	viewedAt: timestamp("viewed_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("user_recent_views_place_id_idx").using("btree", table.placeId.asc().nullsLast().op("int4_ops")),
+	index("user_recent_views_unique_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops"), table.placeId.asc().nullsLast().op("int4_ops")),
+	index("user_recent_views_user_id_idx").using("btree", table.userId.asc().nullsLast().op("int4_ops")),
+	index("user_recent_views_viewed_at_idx").using("btree", table.viewedAt.asc().nullsLast().op("timestamp_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_recent_views_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "user_recent_views_place_id_places_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const legacyRedirects = pgTable("legacy_redirects", {
+	id: serial().primaryKey().notNull(),
+	sourcePath: varchar("source_path", { length: 500 }).notNull(),
+	destinationPath: varchar("destination_path", { length: 500 }).notNull(),
+	redirectType: integer("redirect_type").default(301),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_legacy_redirects_source").using("btree", table.sourcePath.asc().nullsLast().op("text_ops")),
+	unique("legacy_redirects_source_path_key").on(table.sourcePath),
+]);
+
+export const placeCategories = pgTable("place_categories", {
+	placeId: integer("place_id").notNull(),
+	categoryId: integer("category_id").notNull(),
+}, (table) => [
+	index("place_categories_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.placeId],
+			foreignColumns: [places.id],
+			name: "place_categories_place_id_places_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.categoryId],
+			foreignColumns: [categories.id],
+			name: "place_categories_category_id_categories_id_fk"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.placeId, table.categoryId], name: "place_categories_place_id_category_id_pk"}),
+]);
+
+export const blogPostTags = pgTable("blog_post_tags", {
+	postId: integer("post_id").notNull(),
+	tagId: integer("tag_id").notNull(),
+}, (table) => [
+	index("blog_post_tags_tag_id_idx").using("btree", table.tagId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.postId],
+			foreignColumns: [blogPosts.id],
+			name: "blog_post_tags_post_id_blog_posts_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tagId],
+			foreignColumns: [blogTags.id],
+			name: "blog_post_tags_tag_id_blog_tags_id_fk"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.postId, table.tagId], name: "blog_post_tags_post_id_tag_id_pk"}),
+]);
