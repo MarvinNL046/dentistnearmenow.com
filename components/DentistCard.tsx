@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { MapPin, Phone, Star, Clock, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,25 +13,36 @@ interface DentistCardProps {
   distance?: number;
 }
 
+// Placeholder component for dentist image
+function DentistPlaceholder() {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+      <svg className="w-16 h-16 text-primary/30" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C9.5 2 7.5 3 6.5 4.5C5.5 6 5 8 5 10C5 12 5.5 14 6 16C6.5 18 7 20 8 21.5C8.5 22.5 9.5 22 10 21C10.5 20 11 18 11 16C11 15 11.5 14 12 14C12.5 14 13 15 13 16C13 18 13.5 20 14 21C14.5 22 15.5 22.5 16 21.5C17 20 17.5 18 18 16C18.5 14 19 12 19 10C19 8 18.5 6 17.5 4.5C16.5 3 14.5 2 12 2Z" />
+      </svg>
+    </div>
+  );
+}
+
 export default function DentistCard({ dentist, showDistance, distance }: DentistCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Image */}
           <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 flex-shrink-0">
-            {dentist.photo ? (
+            {dentist.photo && !imageError ? (
               <img
                 src={dentist.photo}
                 alt={dentist.name}
                 className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+                loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                <svg className="w-16 h-16 text-primary/30" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C9.5 2 7.5 3 6.5 4.5C5.5 6 5 8 5 10C5 12 5.5 14 6 16C6.5 18 7 20 8 21.5C8.5 22.5 9.5 22 10 21C10.5 20 11 18 11 16C11 15 11.5 14 12 14C12.5 14 13 15 13 16C13 18 13.5 20 14 21C14.5 22 15.5 22.5 16 21.5C17 20 17.5 18 18 16C18.5 14 19 12 19 10C19 8 18.5 6 17.5 4.5C16.5 3 14.5 2 12 2Z" />
-                </svg>
-              </div>
+              <DentistPlaceholder />
             )}
           </div>
 

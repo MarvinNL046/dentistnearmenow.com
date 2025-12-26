@@ -201,6 +201,48 @@ export const DENTIST_TYPES: DentistType[] = [
 // Cache
 let dentistsCache: Dentist[] | null = null;
 
+// Transform snake_case discovery data to camelCase Dentist interface
+function transformDiscoveryData(raw: Record<string, unknown>): Dentist {
+  return {
+    id: (raw.google_cid as string) || (raw.id as string) || '',
+    name: (raw.name as string) || '',
+    slug: createSlug(
+      (raw.name as string) || '',
+      (raw.city as string) || '',
+      (raw.state_abbr as string) || (raw.stateAbbr as string)
+    ),
+    googleCid: raw.google_cid as string,
+    googlePlaceId: raw.google_place_id as string,
+    address: raw.address as string,
+    city: (raw.city as string) || '',
+    county: raw.county as string,
+    state: (raw.state as string) || '',
+    stateAbbr: (raw.state_abbr as string) || (raw.stateAbbr as string) || '',
+    zipCode: raw.zip_code as string,
+    country: (raw.country as string) || 'USA',
+    latitude: raw.latitude as number,
+    longitude: raw.longitude as number,
+    businessType: (raw.business_type as string) || (raw.businessType as string) || 'dentist',
+    phone: raw.phone as string,
+    website: raw.website as string,
+    openingHours: raw.opening_hours as string,
+    specialties: raw.categories as string[],
+    services: raw.services as string[],
+    rating: raw.rating as number,
+    reviewCount: (raw.review_count as number) || (raw.reviewCount as number),
+    photo: (raw.photo_url as string) || (raw.photo as string),
+    photos: raw.photos as string[],
+    // Check for emergency in services or categories
+    emergencyServices: Boolean(
+      (raw.services as string[])?.some(s => s.toLowerCase().includes('emergency')) ||
+      (raw.categories as string[])?.some(c => c.toLowerCase().includes('emergency')) ||
+      (raw.business_type as string)?.toLowerCase().includes('emergency')
+    ),
+    discoveredAt: raw.discovered_at as string,
+    lastUpdated: raw.last_updated as string,
+  };
+}
+
 // ===== CORE DATA FUNCTIONS =====
 
 export async function getAllDentists(): Promise<Dentist[]> {
@@ -212,7 +254,10 @@ export async function getAllDentists(): Promise<Dentist[]> {
     try {
       const content = await fs.readFile(discoveryPath, 'utf-8');
       const data = JSON.parse(content);
-      const dentists: Dentist[] = data.dentists || [];
+      // Handle both array format and object with dentists property
+      const rawData: Record<string, unknown>[] = Array.isArray(data) ? data : (data.dentists || []);
+      // Transform snake_case to camelCase
+      const dentists: Dentist[] = rawData.map(transformDiscoveryData);
       dentistsCache = dentists;
       return dentists;
     } catch {

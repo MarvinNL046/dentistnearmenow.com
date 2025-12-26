@@ -17,6 +17,7 @@ import {
 import { getDentistBySlug, getAllDentists, getStateByAbbr } from '@/lib/dentist-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import DentistImage from '@/components/DentistImage';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -83,7 +84,8 @@ function generateJsonLd(dentist: NonNullable<Awaited<ReturnType<typeof getDentis
     } : undefined,
     image: dentist.photo,
     priceRange: '$$',
-    openingHoursSpecification: dentist.openingHours ? JSON.parse(dentist.openingHours) : undefined,
+    // openingHours is plain text like "Closed · Opens 8 AM", not JSON - skip for schema
+    openingHoursSpecification: undefined,
     medicalSpecialty: dentist.specialties?.join(', '),
     availableService: dentist.services?.map(service => ({
       '@type': 'MedicalProcedure',
@@ -155,19 +157,11 @@ export default async function DentistPage({ params }: PageProps) {
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo */}
                   <div className="w-full md:w-48 h-48 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
-                    {dentist.photo ? (
-                      <img
-                        src={dentist.photo}
-                        alt={dentist.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                        <svg className="w-20 h-20 text-primary/30" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2C9.5 2 7.5 3 6.5 4.5C5.5 6 5 8 5 10C5 12 5.5 14 6 16C6.5 18 7 20 8 21.5C8.5 22.5 9.5 22 10 21C10.5 20 11 18 11 16C11 15 11.5 14 12 14C12.5 14 13 15 13 16C13 18 13.5 20 14 21C14.5 22 15.5 22.5 16 21.5C17 20 17.5 18 18 16C18.5 14 19 12 19 10C19 8 18.5 6 17.5 4.5C16.5 3 14.5 2 12 2Z" />
-                        </svg>
-                      </div>
-                    )}
+                    <DentistImage
+                      src={dentist.photo}
+                      alt={dentist.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
                   {/* Info */}
@@ -253,8 +247,8 @@ export default async function DentistPage({ params }: PageProps) {
                 <div className="bg-white rounded-xl border p-6">
                   <h2 className="text-xl font-semibold mb-4">Services Offered</h2>
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {dentist.services.map((service) => (
-                      <div key={service} className="flex items-center gap-2">
+                    {dentist.services.map((service, index) => (
+                      <div key={`${service}-${index}`} className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-500" />
                         <span>{service}</span>
                       </div>
