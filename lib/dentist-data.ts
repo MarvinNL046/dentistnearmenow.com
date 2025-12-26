@@ -448,15 +448,34 @@ export async function searchDentists(query: string, filters?: {
   if (filters?.type) {
     const typeFilter = filters.type.toLowerCase();
     // Map filter slugs to actual business_type values
+    // Support both formats: general-dentist and general-dentistry
+    // Map URL slugs to business_type search terms (based on actual data values)
     const typeMapping: Record<string, string[]> = {
+      // General dentistry - matches: Dentist (3159), Dental clinic (379)
       'general-dentist': ['dentist', 'dental clinic', 'dental office', 'family dentist'],
-      'pediatric-dentist': ['pediatric dentist', 'pediatric', 'children', 'kids dentist'],
+      'general-dentistry': ['dentist', 'dental clinic', 'dental office', 'family dentist'],
+      // Pediatric - matches: Pediatric dentist (532), Paediatric Dentist (20)
+      'pediatric-dentist': ['pediatric dentist', 'paediatric dentist', 'pediatric', 'children', 'kids dentist'],
+      'pediatric-dentistry': ['pediatric dentist', 'paediatric dentist', 'pediatric', 'children', 'kids dentist'],
+      // Cosmetic - matches: Cosmetic dentist (150), Teeth whitening service (26)
       'cosmetic-dentist': ['cosmetic dentist', 'cosmetic', 'teeth whitening'],
+      'cosmetic-dentistry': ['cosmetic dentist', 'cosmetic', 'teeth whitening'],
+      // Orthodontics - matches: Orthodontist (543)
       'orthodontist': ['orthodontist', 'braces', 'invisalign'],
+      'orthodontics': ['orthodontist', 'braces', 'invisalign'],
+      // Oral surgery - matches: Oral surgeon (232), Oral and maxillofacial surgeon (69)
       'oral-surgeon': ['oral surgeon', 'oral and maxillofacial', 'dental surgery'],
+      'oral-surgery': ['oral surgeon', 'oral and maxillofacial', 'dental surgery'],
+      // Endodontics - matches: Endodontist (436)
       'endodontist': ['endodontist', 'root canal'],
+      'endodontics': ['endodontist', 'root canal'],
+      // Periodontics - matches: Periodontist (90), Dental implants periodontist (238)
       'periodontist': ['periodontist', 'gum', 'dental implants periodontist'],
-      'emergency-dentist': ['emergency dental', 'emergency room', 'urgent care'],
+      'periodontics': ['periodontist', 'gum', 'dental implants periodontist'],
+      // Emergency - matches: Emergency dental service (181)
+      'emergency-dentist': ['emergency dental', 'emergency dentist', 'urgent care', '24 hour'],
+      'emergency-dentistry': ['emergency dental', 'emergency dentist', 'urgent care', '24 hour'],
+      // Prosthodontics - matches: Prosthodontist (60), Dental implants provider (76)
       'prosthodontist': ['prosthodontist', 'dentures', 'dental implants provider'],
     };
 

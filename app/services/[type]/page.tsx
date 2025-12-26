@@ -600,9 +600,9 @@ export default async function ServiceTypePage({ params }: PageProps) {
     notFound();
   }
 
-  // Search for dentists of this type
-  const searchType = type.replace(/-/g, ' ').replace('dentistry', 'dentist');
-  const dentists = await searchDentists('', { type: searchType });
+  // Search for dentists of this type - pass the URL slug directly
+  // The searchDentists function now handles both formats (e.g., cosmetic-dentistry and cosmetic-dentist)
+  const dentists = await searchDentists('', { type: type.toLowerCase() });
   const Icon = service.icon;
 
   // Generate FAQ Schema JSON-LD
