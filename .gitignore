@@ -21,3 +21,4 @@ data/discovery/
 # IDE
 .vscode/
 .idea/
+.vercel

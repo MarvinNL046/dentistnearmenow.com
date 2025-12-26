@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Shield, Phone, AlertCircle } from 'lucide-react';
+import { Menu, X, Phone, AlertCircle } from 'lucide-react';
+// MVP: Login temporarily disabled
+// import { User, LogOut, LayoutDashboard, ChevronDown, Shield } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 
@@ -13,17 +15,19 @@ const navLinks = [
   { href: '/guides', label: 'Dental Guides' },
 ];
 
-interface UserData {
-  id: number;
-  email: string;
-  name: string;
-  role: string;
-}
+// MVP: Login temporarily disabled
+// interface UserData {
+//   id: number;
+//   email: string;
+//   name: string;
+//   role: string;
+// }
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  // MVP: Login temporarily disabled
+  // const [user, setUser] = useState<UserData | null>(null);
+  // const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -34,34 +38,36 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-          cache: 'no-store',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
-      } catch {
-        // User not logged in
-      }
-    };
-    checkAuth();
-  }, []);
+  // MVP: Login temporarily disabled
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     try {
+  //       const response = await fetch('/api/auth/me', {
+  //         credentials: 'include',
+  //         cache: 'no-store',
+  //       });
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         setUser(data.user);
+  //       }
+  //     } catch {
+  //       // User not logged in
+  //     }
+  //   };
+  //   checkAuth();
+  // }, []);
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      setUser(null);
-      setUserMenuOpen(false);
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  // MVP: Login temporarily disabled
+  // const handleLogout = async () => {
+  //   try {
+  //     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  //     setUser(null);
+  //     setUserMenuOpen(false);
+  //     window.location.href = '/';
+  //   } catch (error) {
+  //     console.error('Logout error:', error);
+  //   }
+  // };
 
   return (
     <header
@@ -101,7 +107,8 @@ export default function Header() {
 
           {/* Desktop Auth + CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            {user ? (
+            {/* MVP: Login temporarily disabled */}
+            {/* {user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -164,7 +171,7 @@ export default function Header() {
                   Sign In
                 </Button>
               </Link>
-            )}
+            )} */}
             <Link href="/emergency-dentist">
               <Button variant="destructive" size="sm">
                 <Phone className="w-4 h-4" />
@@ -225,8 +232,8 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Mobile Auth Section */}
-            <div className="mt-4 pt-4 border-t">
+            {/* MVP: Mobile Auth Section temporarily disabled */}
+            {/* <div className="mt-4 pt-4 border-t">
               {user ? (
                 <div className="space-y-1">
                   <div className="flex items-center gap-3 px-4 py-3 bg-secondary/30 rounded-lg">
@@ -284,7 +291,7 @@ export default function Header() {
                   </Link>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
         )}
       </nav>
