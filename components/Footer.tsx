@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Facebook, Twitter, Linkedin, Phone } from 'lucide-react';
+import { Mail, Facebook, Twitter, Linkedin, Phone, ChevronRight } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -13,6 +13,8 @@ const popularStates = [
   { href: '/state/new-york', label: 'New York' },
   { href: '/state/pennsylvania', label: 'Pennsylvania' },
   { href: '/state/ohio', label: 'Ohio' },
+  { href: '/state/illinois', label: 'Illinois' },
+  { href: '/state/georgia', label: 'Georgia' },
 ];
 
 const dentalServices = [
@@ -21,15 +23,26 @@ const dentalServices = [
   { href: '/services/orthodontics', label: 'Orthodontics' },
   { href: '/services/oral-surgery', label: 'Oral Surgery' },
   { href: '/services/pediatric-dentistry', label: 'Pediatric Dentistry' },
+  { href: '/services/endodontist', label: 'Endodontics' },
+  { href: '/services/periodontist', label: 'Periodontics' },
   { href: '/emergency-dentist', label: 'Emergency Dentist' },
 ];
 
-const resources = [
-  { href: '/guides', label: 'Dental Guides' },
-  { href: '/guides/dental-insurance', label: 'Dental Insurance' },
+const guides = [
+  { href: '/guides/dental-insurance', label: 'Dental Insurance Guide' },
   { href: '/guides/finding-right-dentist', label: 'Choosing a Dentist' },
   { href: '/guides/dental-health-tips', label: 'Dental Health Tips' },
-  { href: '/faq', label: 'FAQs' },
+  { href: '/guides/dental-anxiety', label: 'Dental Anxiety' },
+  { href: '/guides/eeat-dental-care', label: 'Expert Dental Care' },
+];
+
+const popularCities = [
+  { href: '/city/los-angeles-ca', label: 'Los Angeles, CA' },
+  { href: '/city/new-york-ny', label: 'New York, NY' },
+  { href: '/city/chicago-il', label: 'Chicago, IL' },
+  { href: '/city/houston-tx', label: 'Houston, TX' },
+  { href: '/city/phoenix-az', label: 'Phoenix, AZ' },
+  { href: '/city/philadelphia-pa', label: 'Philadelphia, PA' },
 ];
 
 const information = [
@@ -38,6 +51,15 @@ const information = [
   { href: '/for-dentists', label: 'For Dentists' },
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms of Service' },
+  { href: '/sitemap', label: 'Sitemap' },
+];
+
+const quickLinks = [
+  { href: '/search', label: 'Search Dentists' },
+  { href: '/emergency-dentist', label: 'Emergency Dentist' },
+  { href: '/state', label: 'Browse by State' },
+  { href: '/services', label: 'All Services' },
+  { href: '/faq', label: 'FAQ' },
 ];
 
 export default function Footer() {
@@ -106,9 +128,9 @@ export default function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
-          {/* Logo & Description */}
-          <div className="lg:col-span-2">
+        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
+          {/* Logo & Description - spans 2 columns on large screens */}
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Logo variant="light" size="md" className="mb-4" />
             <p className="text-primary-foreground/70 mb-6 max-w-sm">
               Your trusted resource for finding quality dental care across the United States.
@@ -154,50 +176,103 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="block py-1.5 text-primary-foreground/70 hover:text-white transition-colors text-sm sm:text-base"
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/state"
+                  className="inline-flex items-center gap-1 py-1 text-teal-300 hover:text-white transition-colors text-sm font-medium"
+                >
+                  View All States
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Dental Services */}
           <div>
-            <h4 className="font-semibold mb-4 text-teal-300">Dental Services</h4>
+            <h4 className="font-semibold mb-4 text-teal-300">All Services</h4>
             <ul className="space-y-1">
               {dentalServices.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="block py-1.5 text-primary-foreground/70 hover:text-white transition-colors text-sm sm:text-base"
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/services"
+                  className="inline-flex items-center gap-1 py-1 text-teal-300 hover:text-white transition-colors text-sm font-medium"
+                >
+                  View All Services
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Guides */}
           <div>
-            <h4 className="font-semibold mb-4 text-teal-300">Resources</h4>
+            <h4 className="font-semibold mb-4 text-teal-300">Guides</h4>
             <ul className="space-y-1">
-              {resources.map((link) => (
+              {guides.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="block py-1.5 text-primary-foreground/70 hover:text-white transition-colors text-sm sm:text-base"
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/guides"
+                  className="inline-flex items-center gap-1 py-1 text-teal-300 hover:text-white transition-colors text-sm font-medium"
+                >
+                  View All Guides
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Information & Contact */}
+          {/* Popular Cities */}
+          <div>
+            <h4 className="font-semibold mb-4 text-teal-300">Popular Cities</h4>
+            <ul className="space-y-1">
+              {popularCities.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/state"
+                  className="inline-flex items-center gap-1 py-1 text-teal-300 hover:text-white transition-colors text-sm font-medium"
+                >
+                  More Cities
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Information */}
           <div>
             <h4 className="font-semibold mb-4 text-teal-300">Information</h4>
             <ul className="space-y-1 mb-6">
@@ -205,7 +280,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="block py-1.5 text-primary-foreground/70 hover:text-white transition-colors text-sm sm:text-base"
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
                   >
                     {link.label}
                   </Link>
@@ -213,16 +288,29 @@ export default function Footer() {
               ))}
             </ul>
             <h4 className="font-semibold mb-3 text-teal-300">Contact</h4>
+            <a
+              href="mailto:info@dentistnearmenow.com"
+              className="flex items-center gap-2 py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
+            >
+              <Mail className="w-4 h-4 flex-shrink-0" />
+              <span className="break-all">info@dentistnearmenow.com</span>
+            </a>
+          </div>
+
+          {/* Quick Links - Hidden on small screens, visible on lg+ */}
+          <div className="sm:col-span-2 md:col-span-1">
+            <h4 className="font-semibold mb-4 text-teal-300">Quick Links</h4>
             <ul className="space-y-1">
-              <li>
-                <a
-                  href="mailto:info@dentistnearmenow.com"
-                  className="flex items-center gap-2 py-1.5 text-primary-foreground/70 hover:text-white transition-colors text-sm sm:text-base"
-                >
-                  <Mail className="w-4 h-4 flex-shrink-0" />
-                  <span className="break-all">info@dentistnearmenow.com</span>
-                </a>
-              </li>
+              {quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="block py-1 text-primary-foreground/70 hover:text-white transition-colors text-sm"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -240,7 +328,7 @@ export default function Footer() {
               <Link href="/terms" className="hover:text-white transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/sitemap.xml" className="hover:text-white transition-colors">
+              <Link href="/sitemap" className="hover:text-white transition-colors">
                 Sitemap
               </Link>
             </div>
