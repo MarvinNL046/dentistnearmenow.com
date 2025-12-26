@@ -51,7 +51,7 @@ const information = [
   { href: '/for-dentists', label: 'For Dentists' },
   { href: '/privacy', label: 'Privacy Policy' },
   { href: '/terms', label: 'Terms of Service' },
-  { href: '/sitemap', label: 'Sitemap' },
+  { href: '/html-sitemap', label: 'Sitemap' },
 ];
 
 const quickLinks = [
@@ -328,7 +328,7 @@ export default function Footer() {
               <Link href="/terms" className="hover:text-white transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/sitemap" className="hover:text-white transition-colors">
+              <Link href="/html-sitemap" className="hover:text-white transition-colors">
                 Sitemap
               </Link>
             </div>
