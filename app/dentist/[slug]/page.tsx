@@ -17,11 +17,15 @@ import {
   Calendar,
   Navigation
 } from 'lucide-react';
-import { getDentistBySlug, getAllDentists, getStateByAbbr } from '@/lib/dentist-data';
+import { getDentistBySlug, getAllDentists, getStateByAbbr, getDentistsByCity } from '@/lib/dentist-data';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DentistImage from '@/components/DentistImage';
 import AboutSection from '@/components/AboutSection';
+import RelatedDentists from '@/components/RelatedDentists';
+import ServiceLinks from '@/components/ServiceLinks';
+import QuickGuides from '@/components/QuickGuides';
+import NearbyLocations from '@/components/NearbyLocations';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -125,6 +129,14 @@ export default async function DentistPage({ params }: PageProps) {
 
   const state = getStateByAbbr(dentist.stateAbbr);
   const citySlug = `${dentist.city.toLowerCase().replace(/\s+/g, '-')}-${dentist.stateAbbr.toLowerCase()}`;
+
+  // Fetch related dentists from the same city
+  const cityDentists = await getDentistsByCity(dentist.city, dentist.stateAbbr);
+
+  // Determine guide context based on services
+  const guideContext = dentist.emergencyServices ? 'emergency' :
+    dentist.specialties?.some(s => s.toLowerCase().includes('cosmetic')) ? 'cosmetic' :
+    dentist.specialties?.some(s => s.toLowerCase().includes('pediatric')) ? 'pediatric' : 'general';
 
   return (
     <>
@@ -442,6 +454,20 @@ export default async function DentistPage({ params }: PageProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Related Services */}
+              <div className="bg-white rounded-xl border p-6">
+                <ServiceLinks
+                  services={dentist.services}
+                  specialties={dentist.specialties}
+                  emergencyServices={dentist.emergencyServices}
+                />
+              </div>
+
+              {/* Helpful Guides */}
+              <div className="bg-white rounded-xl border p-6">
+                <QuickGuides context={guideContext} />
+              </div>
             </div>
           </div>
         </div>
@@ -486,6 +512,35 @@ export default async function DentistPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+
+        {/* Related Dentists in City */}
+        {cityDentists.length > 1 && (
+          <section className="py-12 bg-white">
+            <div className="container mx-auto px-4">
+              <RelatedDentists
+                dentists={cityDentists}
+                currentSlug={dentist.slug}
+                city={dentist.city}
+                stateAbbr={dentist.stateAbbr}
+                limit={3}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Explore State */}
+        {state && (
+          <section className="py-12 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <NearbyLocations
+                currentCity={dentist.city}
+                state={dentist.stateAbbr}
+                variant="grid"
+                limit={6}
+              />
+            </div>
+          </section>
+        )}
       </div>
     </>
   );

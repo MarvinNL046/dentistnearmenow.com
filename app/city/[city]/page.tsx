@@ -7,6 +7,8 @@ import { ChevronRight, MapPin, Users, Phone } from 'lucide-react';
 export const revalidate = 86400;
 import { getDentistsByCity, getStateByAbbr, getAllDentists } from '@/lib/dentist-data';
 import DentistCard from '@/components/DentistCard';
+import NearbyLocations from '@/components/NearbyLocations';
+import QuickGuides from '@/components/QuickGuides';
 
 interface PageProps {
   params: Promise<{ city: string }>;
@@ -220,6 +222,139 @@ export default async function CityPage({ params }: PageProps) {
               >
                 <Phone className="w-4 h-4" />
                 Find Emergency Dentist
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Services Section */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-6">Find Dental Services in {parsed.city}</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <Link
+              href={`/services/general-dentistry`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">🦷</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">General Dentistry</p>
+                <p className="text-sm text-muted-foreground">Cleanings & checkups</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services/cosmetic-dentistry`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">✨</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">Cosmetic Dentistry</p>
+                <p className="text-sm text-muted-foreground">Whitening & veneers</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services/orthodontics`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">😁</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">Orthodontics</p>
+                <p className="text-sm text-muted-foreground">Braces & Invisalign</p>
+              </div>
+            </Link>
+            <Link
+              href={`/emergency-dentist/${citySlug}`}
+              className="flex items-center gap-3 p-4 bg-red-50 rounded-xl hover:bg-red-100 border border-transparent hover:border-red-200 transition-all group"
+            >
+              <span className="text-2xl">🚨</span>
+              <div>
+                <p className="font-medium text-red-700">Emergency Care</p>
+                <p className="text-sm text-red-600">24/7 urgent dental</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services/pediatric-dentistry`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">👶</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">Pediatric Dentistry</p>
+                <p className="text-sm text-muted-foreground">Kids dental care</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services/dental-implants`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">🔩</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">Dental Implants</p>
+                <p className="text-sm text-muted-foreground">Tooth replacement</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services/oral-surgery`}
+              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-primary/5 hover:border-primary border border-transparent transition-all group"
+            >
+              <span className="text-2xl">🏥</span>
+              <div>
+                <p className="font-medium group-hover:text-primary transition-colors">Oral Surgery</p>
+                <p className="text-sm text-muted-foreground">Extractions & more</p>
+              </div>
+            </Link>
+            <Link
+              href={`/services`}
+              className="flex items-center gap-3 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 border border-primary/20 transition-all group"
+            >
+              <span className="text-2xl">→</span>
+              <div>
+                <p className="font-medium text-primary">View All Services</p>
+                <p className="text-sm text-primary/70">Browse all options</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Nearby Cities */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <NearbyLocations
+            currentCity={parsed.city}
+            state={parsed.stateAbbr}
+            variant="grid"
+            limit={8}
+          />
+        </div>
+      </section>
+
+      {/* Helpful Guides */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6">Dental Care Resources</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Link
+                href="/guides/finding-right-dentist"
+                className="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow group"
+              >
+                <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">How to Choose a Dentist</h3>
+                <p className="text-sm text-muted-foreground">Tips for finding the right dental care provider for your needs.</p>
+              </Link>
+              <Link
+                href="/guides/dental-insurance"
+                className="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow group"
+              >
+                <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Dental Insurance Guide</h3>
+                <p className="text-sm text-muted-foreground">Understanding dental insurance and maximizing your benefits.</p>
+              </Link>
+              <Link
+                href="/guides/dental-emergencies"
+                className="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow group"
+              >
+                <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Dental Emergencies</h3>
+                <p className="text-sm text-muted-foreground">What to do in a dental emergency and when to seek care.</p>
               </Link>
             </div>
           </div>
