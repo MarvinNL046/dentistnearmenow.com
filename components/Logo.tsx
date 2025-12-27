@@ -76,7 +76,7 @@ export default function Logo({
         <span className={cn(currentSize.text, "font-semibold tracking-tight")}>
           <span className={currentVariant.textPrimary}>Dentist</span>
           <span className={currentVariant.textAccent}>NearMe</span>
-          <span className={currentVariant.textPrimary}>.com</span>
+          <span className={currentVariant.textPrimary}>Now.com</span>
         </span>
       )}
     </Link>
