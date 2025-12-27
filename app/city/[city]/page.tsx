@@ -9,7 +9,7 @@ import { getDentistsByCity, getStateByAbbr, getAllDentists } from '@/lib/dentist
 import DentistCard from '@/components/DentistCard';
 import NearbyLocations from '@/components/NearbyLocations';
 import QuickGuides from '@/components/QuickGuides';
-import { InArticleAd } from '@/components/AdUnit';
+import { InArticleAd, LeaderboardAd, InFeedAd } from '@/components/AdUnit';
 
 interface PageProps {
   params: Promise<{ city: string }>;
@@ -131,6 +131,9 @@ export default async function CityPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* Leaderboard Ad - High visibility placement after hero */}
+      <LeaderboardAd position="top" />
+
       <div className="container mx-auto px-4 py-12">
         {/* Quick Filters */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -160,8 +163,16 @@ export default async function CityPage({ params }: PageProps) {
 
         {dentists.length > 0 ? (
           <div className="space-y-4">
-            {dentists.map((dentist) => (
-              <DentistCard key={dentist.id} dentist={dentist} />
+            {dentists.map((dentist, index) => (
+              <div key={dentist.id}>
+                <DentistCard dentist={dentist} />
+                {/* Insert in-feed ad after every 4th dentist (but not the last one) */}
+                {(index + 1) % 4 === 0 && index < dentists.length - 1 && (
+                  <div className="my-4">
+                    <InFeedAd />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (

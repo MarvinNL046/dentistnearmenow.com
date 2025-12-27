@@ -26,7 +26,7 @@ import RelatedDentists from '@/components/RelatedDentists';
 import ServiceLinks from '@/components/ServiceLinks';
 import QuickGuides from '@/components/QuickGuides';
 import NearbyLocations from '@/components/NearbyLocations';
-import { InArticleAd, SidebarAd } from '@/components/AdUnit';
+import { InArticleAd, SidebarAd, LeaderboardAd, MobileBannerAd } from '@/components/AdUnit';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -384,6 +384,9 @@ export default async function DentistPage({ params }: PageProps) {
                 </div>
               </div>
 
+              {/* Mobile Ad - Only visible on mobile after main info */}
+              <MobileBannerAd />
+
               {/* About Section */}
               {dentist.description && (
                 <AboutSection
@@ -645,6 +648,9 @@ export default async function DentistPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+
+        {/* Leaderboard Ad before Related Dentists */}
+        <LeaderboardAd position="bottom" />
 
         {/* Related Dentists in City */}
         {cityDentists.length > 1 && (
