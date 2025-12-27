@@ -1,242 +1,126 @@
 import { MetadataRoute } from 'next';
-import { getAllDentists, US_STATES } from '@/lib/dentist-data';
+import { getAllDentists, US_STATES, Dentist } from '@/lib/dentist-data';
 
 const BASE_URL = 'https://dentistnearmenow.com';
 
-// Max URLs per sitemap (Google recommends max 50,000)
-const MAX_URLS_PER_SITEMAP = 10000;
-
 /**
+ * Sitemap Index Structure:
+ * - sitemap-0.xml: Static pages (homepage, services, guides, utility, legal)
+ * - sitemap-1.xml to sitemap-51.xml: State-based sitemaps (50 states + DC)
+ *
+ * Each state sitemap contains:
+ * - State page
+ * - City pages for that state
+ * - Emergency city pages for that state
+ * - Dentist profile pages for that state
+ *
  * SEO Priority Hierarchy:
- * - 1.0: Homepage (most important, entry point)
+ * - 1.0: Homepage
  * - 0.9: Pillar pages (/services, /guides, /state, /emergency-dentist)
  * - 0.8: Sub-pillar pages (/state/[state], /services/[type])
  * - 0.7: City pages, guide articles
- * - 0.6: Detail pages (dentist profiles)
+ * - 0.6: Dentist profile pages
  * - 0.5: Utility pages (about, contact, for-dentists)
- * - 0.3: Legal pages, tag pages (low priority but crawlable for link equity)
+ * - 0.3: Legal pages, tag pages
  */
 
-/**
- * Tag categories for organizing dental content
- * These help with internal linking and topic clustering
- */
+// Tag categories for organizing dental content
 const tagCategories = [
-  // Service-related tags
-  'teeth-whitening',
-  'dental-implants',
-  'braces',
-  'invisalign',
-  'root-canal',
-  'dental-crowns',
-  'dental-veneers',
-  'tooth-extraction',
-  'dental-cleaning',
-  'dental-fillings',
-  // Condition-related tags
-  'toothache',
-  'gum-disease',
-  'cavities',
-  'tooth-sensitivity',
-  'bad-breath',
-  // Audience tags
-  'family-dentistry',
-  'senior-dental-care',
-  'dental-anxiety',
-  // Insurance/payment tags
-  'accepts-medicaid',
   'accepts-insurance',
-  'affordable-dental-care',
-  'dental-payment-plans',
+  'weekend-hours',
+  'emergency-available',
 ];
 
-/**
- * Generate multiple sitemaps for scalability
- * This creates sitemap-0.xml, sitemap-1.xml, etc.
- * Google recommends splitting large sitemaps for better crawling
- */
+// Generate sitemap IDs: 0 for static, 1-51 for states
 export async function generateSitemaps() {
-  const dentists = await getAllDentists();
+  // Sitemap 0 = static pages
+  // Sitemaps 1-51 = one per state (50 states + DC)
+  const sitemaps = [{ id: 0 }];
 
-  // Calculate number of sitemaps needed:
-  // 1 for static pages
-  // 1 for states/cities
-  // N for dentists (split by MAX_URLS_PER_SITEMAP)
-  const dentistSitemapCount = Math.ceil(dentists.length / MAX_URLS_PER_SITEMAP);
-
-  // Generate sitemap IDs: 0 = static, 1 = locations, 2+ = dentists
-  const sitemaps = [
-    { id: 0 }, // Static pages, services, guides
-    { id: 1 }, // States and cities
-    ...Array.from({ length: dentistSitemapCount }, (_, i) => ({ id: i + 2 })),
-  ];
+  US_STATES.forEach((_, index) => {
+    sitemaps.push({ id: index + 1 });
+  });
 
   return sitemaps;
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const dentists = await getAllDentists();
+export default async function sitemap(props: {
+  id: Promise<string>
+}): Promise<MetadataRoute.Sitemap> {
+  // Next.js 16+ passes id as Promise<string>
+  const id = Number(await props.id);
 
   // Sitemap 0: Static pages
   if (id === 0) {
-    return getStaticSitemap();
+    return generateStaticSitemap();
   }
 
-  // Sitemap 1: Locations (states and cities)
-  if (id === 1) {
-    return getLocationsSitemap(dentists);
+  // Sitemaps 1-51: State-based sitemaps
+  const stateIndex = id - 1;
+  if (stateIndex >= 0 && stateIndex < US_STATES.length) {
+    const state = US_STATES[stateIndex];
+    return generateStateSitemap(state.abbr, state.slug);
   }
 
-  // Sitemap 2+: Dentists (paginated)
-  const dentistIndex = id - 2;
-  const start = dentistIndex * MAX_URLS_PER_SITEMAP;
-  const end = start + MAX_URLS_PER_SITEMAP;
-  const dentistSlice = dentists.slice(start, end);
-
-  return getDentistsSitemap(dentistSlice);
+  return [];
 }
 
 /**
- * Static pages sitemap (sitemap-0.xml)
- * Includes homepage, pillar pages, utility pages, legal pages, and tag pages
+ * Generate sitemap for static pages
  */
-function getStaticSitemap(): MetadataRoute.Sitemap {
-  const staticPages: MetadataRoute.Sitemap = [
-    // Homepage - highest priority
-    {
-      url: `${BASE_URL}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    // Search - high priority utility
-    {
-      url: `${BASE_URL}/search`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    // Pillar pages - priority 0.9
-    {
-      url: `${BASE_URL}/services`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/state`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/emergency-dentist`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/guides`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    // Guide articles - sub-pillar priority 0.8
-    {
-      url: `${BASE_URL}/guides/finding-right-dentist`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/dental-anxiety`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/dental-insurance`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/dental-health-tips`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/cosmetic-dentistry`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/pediatric-dental-care`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/dental-emergencies`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/oral-health-conditions`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/guides/dental-procedures`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    // Utility pages - priority 0.5
-    {
-      url: `${BASE_URL}/for-dentists`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${BASE_URL}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${BASE_URL}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${BASE_URL}/faq`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    // Legal pages - priority 0.3
-    {
-      url: `${BASE_URL}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${BASE_URL}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-  ];
+function generateStaticSitemap(): MetadataRoute.Sitemap {
+  const sitemap: MetadataRoute.Sitemap = [];
+  const now = new Date();
 
-  // Service type pages
+  // Homepage - highest priority
+  sitemap.push({
+    url: `${BASE_URL}`,
+    lastModified: now,
+    changeFrequency: 'daily',
+    priority: 1.0,
+  });
+
+  // Search page
+  sitemap.push({
+    url: `${BASE_URL}/search`,
+    lastModified: now,
+    changeFrequency: 'daily',
+    priority: 0.8,
+  });
+
+  // Pillar pages - priority 0.9
+  const pillarPages = ['/services', '/state', '/emergency-dentist', '/guides'];
+  pillarPages.forEach(page => {
+    sitemap.push({
+      url: `${BASE_URL}${page}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    });
+  });
+
+  // Guide articles - priority 0.8
+  const guidePages = [
+    '/guides/finding-right-dentist',
+    '/guides/dental-anxiety',
+    '/guides/dental-insurance',
+    '/guides/dental-health-tips',
+    '/guides/cosmetic-dentistry',
+    '/guides/pediatric-dental-care',
+    '/guides/dental-emergencies',
+    '/guides/oral-health-conditions',
+    '/guides/dental-procedures',
+  ];
+  guidePages.forEach(page => {
+    sitemap.push({
+      url: `${BASE_URL}${page}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    });
+  });
+
+  // Service type pages - priority 0.8
   const serviceTypes = [
     'general-dentistry',
     'cosmetic-dentistry',
@@ -246,83 +130,45 @@ function getStaticSitemap(): MetadataRoute.Sitemap {
     'endodontist',
     'periodontist',
     'emergency-dentist',
-    // Alternative slugs
-    'general-dentist',
-    'cosmetic-dentist',
-    'orthodontist',
-    'oral-surgeon',
-    'pediatric-dentist',
   ];
-
-  // Service type pages - sub-pillar priority 0.8
-  const servicePages: MetadataRoute.Sitemap = serviceTypes.map((type) => ({
-    url: `${BASE_URL}/services/${type}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }));
-
-  // Tag pages - low priority 0.3 (crawlable for link equity)
-  const tagPages: MetadataRoute.Sitemap = tagCategories.map((tag) => ({
-    url: `${BASE_URL}/tag/${tag}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.3,
-  }));
-
-  return [...staticPages, ...servicePages, ...tagPages];
-}
-
-/**
- * Locations sitemap (sitemap-1.xml)
- * Contains all state and city pages
- */
-function getLocationsSitemap(dentists: { city: string; stateAbbr: string; emergencyServices?: boolean }[]): MetadataRoute.Sitemap {
-  const sitemap: MetadataRoute.Sitemap = [];
-
-  // Add all state pages - sub-pillar priority 0.8
-  US_STATES.forEach((state) => {
+  serviceTypes.forEach(type => {
     sitemap.push({
-      url: `${BASE_URL}/state/${state.slug}`,
-      lastModified: new Date(),
+      url: `${BASE_URL}/services/${type}`,
+      lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
     });
   });
 
-  // Get unique city-state combinations
-  const cityStateSet = new Set<string>();
-  const emergencyCitySet = new Set<string>();
-
-  dentists.forEach((d) => {
-    if (d.city && d.stateAbbr) {
-      const slug = `${d.city.toLowerCase().replace(/\s+/g, '-')}-${d.stateAbbr.toLowerCase()}`;
-      cityStateSet.add(slug);
-
-      // Track emergency cities
-      if (d.emergencyServices) {
-        emergencyCitySet.add(slug);
-      }
-    }
-  });
-
-  // Add city pages
-  cityStateSet.forEach((citySlug) => {
+  // Utility pages - priority 0.5
+  const utilityPages = ['/for-dentists', '/about', '/contact', '/faq'];
+  utilityPages.forEach(page => {
     sitemap.push({
-      url: `${BASE_URL}/city/${citySlug}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
+      url: `${BASE_URL}${page}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.5,
     });
   });
 
-  // Add emergency city pages
-  emergencyCitySet.forEach((citySlug) => {
+  // Legal pages - priority 0.3
+  const legalPages = ['/privacy', '/terms', '/html-sitemap'];
+  legalPages.forEach(page => {
     sitemap.push({
-      url: `${BASE_URL}/emergency-dentist/${citySlug}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
+      url: `${BASE_URL}${page}`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    });
+  });
+
+  // Tag pages - priority 0.3
+  tagCategories.forEach(tag => {
+    sitemap.push({
+      url: `${BASE_URL}/tag/${tag}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.3,
     });
   });
 
@@ -330,14 +176,70 @@ function getLocationsSitemap(dentists: { city: string; stateAbbr: string; emerge
 }
 
 /**
- * Dentists sitemap (sitemap-2+.xml)
- * Contains individual dentist pages, paginated
+ * Generate sitemap for a specific state
  */
-function getDentistsSitemap(dentists: { slug: string; lastUpdated?: string }[]): MetadataRoute.Sitemap {
-  return dentists.map((dentist) => ({
-    url: `${BASE_URL}/dentist/${dentist.slug}`,
-    lastModified: dentist.lastUpdated ? new Date(dentist.lastUpdated) : new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+async function generateStateSitemap(stateAbbr: string, stateSlug: string): Promise<MetadataRoute.Sitemap> {
+  const sitemap: MetadataRoute.Sitemap = [];
+  const now = new Date();
+
+  // Get all dentists and filter for this state
+  const allDentists = await getAllDentists();
+  const stateDentists = allDentists.filter(d =>
+    d.stateAbbr?.toUpperCase() === stateAbbr.toUpperCase()
+  );
+
+  // State page - priority 0.8
+  sitemap.push({
+    url: `${BASE_URL}/state/${stateSlug}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  });
+
+  // Collect unique cities for this state
+  const citySet = new Set<string>();
+  const emergencyCitySet = new Set<string>();
+
+  stateDentists.forEach((d: Dentist) => {
+    if (d.city) {
+      const citySlug = `${d.city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbr.toLowerCase()}`;
+      citySet.add(citySlug);
+
+      if (d.emergencyServices) {
+        emergencyCitySet.add(citySlug);
+      }
+    }
+  });
+
+  // City pages - priority 0.7
+  citySet.forEach(citySlug => {
+    sitemap.push({
+      url: `${BASE_URL}/city/${citySlug}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    });
+  });
+
+  // Emergency city pages - priority 0.7
+  emergencyCitySet.forEach(citySlug => {
+    sitemap.push({
+      url: `${BASE_URL}/emergency-dentist/${citySlug}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    });
+  });
+
+  // Dentist pages for this state - priority 0.6
+  stateDentists.forEach((dentist: Dentist) => {
+    sitemap.push({
+      url: `${BASE_URL}/dentist/${dentist.slug}`,
+      lastModified: dentist.lastUpdated ? new Date(dentist.lastUpdated) : now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    });
+  });
+
+  return sitemap;
 }

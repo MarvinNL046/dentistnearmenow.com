@@ -63,11 +63,8 @@ export default function robots(): MetadataRoute.Robots {
       // },
     ],
     // Reference all sitemaps for comprehensive crawling
-    sitemap: [
-      `${baseUrl}/sitemap/0.xml`,  // Static pages, services, guides, tags
-      `${baseUrl}/sitemap/1.xml`,  // Location pages (states, cities)
-      `${baseUrl}/sitemap/2.xml`,  // Dentist profile pages
-    ],
+    // Sitemap 0: Static pages, Sitemaps 1-51: State-based (50 states + DC)
+    sitemap: Array.from({ length: 52 }, (_, i) => `${baseUrl}/sitemap/${i}.xml`),
     host: baseUrl,
   };
 }
