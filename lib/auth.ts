@@ -108,20 +108,20 @@ export async function findUserByEmail(email: string) {
   return user || null;
 }
 
-// Create new user (for email-based auth, we generate a random stackauthId)
+// Create new user
 export async function createUser(data: {
   email: string;
   name: string;
   password?: string;
 }) {
-  const stackauthId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const passwordHash = data.password ? await hashPassword(data.password) : null;
 
   const [user] = await db
     .insert(users)
     .values({
-      stackauthId,
       email: data.email.toLowerCase(),
       name: data.name,
+      passwordHash,
       emailVerified: false,
       role: 'user',
     })

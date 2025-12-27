@@ -17,8 +17,13 @@
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { neon } from '@neondatabase/serverless';
 
 dotenv.config({ path: '.env.local' });
+
+// Database connection for real-time backup
+const DATABASE_URL = process.env.DATABASE_URL;
+const sql = DATABASE_URL ? neon(DATABASE_URL) : null;
 
 // ============================================================================
 // Configuration
@@ -525,6 +530,109 @@ function saveDiscoveredDentists(dentists: DiscoveredDentist[]): void {
   fs.writeFileSync(RESULTS_FILE, JSON.stringify(dentists, null, 2));
 }
 
+/**
+ * Save dentist to Neon database for real-time backup
+ */
+async function saveDentistToDatabase(dentist: DiscoveredDentist): Promise<boolean> {
+  if (!sql) return false;
+
+  try {
+    // Generate slug
+    const slug = createSlug(dentist.name, dentist.city || '', dentist.state_abbr);
+
+    // Check for emergency services
+    const hasEmergency = Boolean(
+      dentist.services?.some(s => s.toLowerCase().includes('emergency')) ||
+      dentist.categories?.some(c => c.toLowerCase().includes('emergency')) ||
+      dentist.business_type?.toLowerCase().includes('emergency')
+    );
+
+    await sql`
+      INSERT INTO dentists (
+        google_cid,
+        google_place_id,
+        slug,
+        name,
+        business_type,
+        address,
+        city,
+        county,
+        state,
+        state_abbr,
+        zip_code,
+        country,
+        latitude,
+        longitude,
+        phone,
+        website,
+        rating,
+        review_count,
+        opening_hours,
+        photo_url,
+        specialties,
+        services,
+        emergency_services,
+        discovered_at,
+        is_active
+      ) VALUES (
+        ${dentist.google_cid},
+        ${dentist.google_place_id || null},
+        ${slug},
+        ${dentist.name},
+        ${dentist.business_type || 'dentist'},
+        ${dentist.address || null},
+        ${dentist.city || null},
+        ${dentist.county || null},
+        ${dentist.state || null},
+        ${dentist.state_abbr || null},
+        ${dentist.zip_code || null},
+        'USA',
+        ${dentist.latitude || null},
+        ${dentist.longitude || null},
+        ${dentist.phone || null},
+        ${dentist.website || null},
+        ${dentist.rating || null},
+        ${dentist.review_count || null},
+        ${dentist.opening_hours ? String(dentist.opening_hours) : null},
+        ${dentist.photo_url || null},
+        ${dentist.categories ? JSON.stringify(dentist.categories) : null},
+        ${dentist.services ? JSON.stringify(dentist.services) : null},
+        ${hasEmergency},
+        ${new Date(dentist.discovered_at)},
+        true
+      )
+      ON CONFLICT (google_cid) DO UPDATE SET
+        name = EXCLUDED.name,
+        business_type = EXCLUDED.business_type,
+        address = EXCLUDED.address,
+        rating = EXCLUDED.rating,
+        review_count = EXCLUDED.review_count,
+        last_updated = NOW()
+    `;
+    return true;
+  } catch (error) {
+    // Silently fail for duplicates, log other errors
+    const errorMsg = String(error);
+    if (!errorMsg.includes('duplicate key') || !errorMsg.includes('slug')) {
+      console.warn(`   ⚠️ DB backup failed: ${errorMsg.slice(0, 50)}`);
+    }
+    return false;
+  }
+}
+
+/**
+ * Create slug from name, city, and state
+ */
+function createSlug(name: string, city: string, stateAbbr?: string): string {
+  const base = stateAbbr ? `${name}-${city}-${stateAbbr}` : `${name}-${city}`;
+  return base
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function updateProgress(locations: DiscoveryLocation[], dentists: DiscoveredDentist[]): void {
   // Group by state
   const stateStats: Record<string, { total: number; completed: number; dentists: number }> = {};
@@ -657,6 +765,7 @@ async function main() {
   console.log(`   To process: ${toProcess.length}`);
   console.log(`   Already found: ${discoveredDentists.length} dentists`);
   console.log(`   Unique CIDs: ${existingCids.size}`);
+  console.log(`   Database backup: ${sql ? '✅ Enabled (real-time sync to Neon)' : '❌ Disabled (DATABASE_URL not set)'}`);
   console.log('');
 
   // Show state breakdown
@@ -713,17 +822,23 @@ async function main() {
         const response = await searchGoogleMapsSERP(query, location.city, location.state);
         const dentists = await processSerpResponse(response, location, query);
 
-        // Filter duplicates
+        // Filter duplicates and save to database
+        let dbSaved = 0;
         for (const dentist of dentists) {
           if (!existingCids.has(dentist.google_cid)) {
             existingCids.add(dentist.google_cid);
             locationResults.push(dentist);
             discoveredDentists.push(dentist);
             newDentists++;
+
+            // Real-time backup to database (crash protection)
+            const saved = await saveDentistToDatabase(dentist);
+            if (saved) dbSaved++;
           }
         }
 
-        console.log(`   ✓ ${dentists.length} CIDs found (${locationResults.length} new)`);
+        const dbStatus = sql ? ` (${dbSaved} → DB)` : '';
+        console.log(`   ✓ ${dentists.length} CIDs found (${locationResults.length} new)${dbStatus}`);
 
         // Small delay between queries
         await sleep(RATE_LIMIT.delayBetweenQueries);

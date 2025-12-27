@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { db, dentists as dentistsTable } from './db';
 
 // Dentist Interface
 export interface Dentist {
@@ -243,13 +244,70 @@ function transformDiscoveryData(raw: Record<string, unknown>): Dentist {
   };
 }
 
+// Transform database row to Dentist interface
+function transformDatabaseRow(row: typeof dentistsTable.$inferSelect): Dentist {
+  return {
+    id: row.googleCid || String(row.id),
+    name: row.name,
+    slug: row.slug,
+    googleCid: row.googleCid || undefined,
+    googlePlaceId: row.googlePlaceId || undefined,
+    address: row.address || undefined,
+    city: row.city || '',
+    county: row.county || undefined,
+    state: row.state || '',
+    stateAbbr: row.stateAbbr || '',
+    zipCode: row.zipCode || undefined,
+    country: row.country || 'USA',
+    latitude: row.latitude ? Number(row.latitude) : undefined,
+    longitude: row.longitude ? Number(row.longitude) : undefined,
+    businessType: row.businessType || 'dentist',
+    phone: row.phone || undefined,
+    email: row.email || undefined,
+    website: row.website || undefined,
+    description: row.description || undefined,
+    openingHours: row.openingHours || undefined,
+    yearEstablished: row.yearEstablished || undefined,
+    specialties: row.specialties ? JSON.parse(row.specialties) : undefined,
+    services: row.services ? JSON.parse(row.services) : undefined,
+    insuranceAccepted: row.insuranceAccepted ? JSON.parse(row.insuranceAccepted) : undefined,
+    languages: row.languages ? JSON.parse(row.languages) : undefined,
+    acceptingNewPatients: row.acceptingNewPatients || undefined,
+    emergencyServices: row.emergencyServices || undefined,
+    wheelchairAccessible: row.wheelchairAccessible || undefined,
+    parkingAvailable: row.parkingAvailable || undefined,
+    rating: row.rating ? Number(row.rating) : undefined,
+    reviewCount: row.reviewCount || undefined,
+    photo: row.photoUrl || undefined,
+    photos: row.photos ? JSON.parse(row.photos) : undefined,
+    isVerified: row.isVerified || undefined,
+    isActive: row.isActive || undefined,
+    discoveredAt: row.discoveredAt?.toISOString() || undefined,
+    lastUpdated: row.lastUpdated?.toISOString() || undefined,
+  };
+}
+
 // ===== CORE DATA FUNCTIONS =====
 
 export async function getAllDentists(): Promise<Dentist[]> {
   if (dentistsCache) return dentistsCache;
 
   try {
-    // Try discovery data first
+    // Try database first (production)
+    if (process.env.DATABASE_URL) {
+      try {
+        const rows = await db.select().from(dentistsTable);
+        if (rows.length > 0) {
+          const dentists = rows.map(transformDatabaseRow);
+          dentistsCache = dentists;
+          return dentists;
+        }
+      } catch (dbError) {
+        console.warn('Database fetch failed, falling back to JSON:', dbError);
+      }
+    }
+
+    // Fallback: Try discovery data (local development)
     const discoveryPath = path.join(process.cwd(), 'data', 'discovery', 'discovered-dentists.json');
     try {
       const content = await fs.readFile(discoveryPath, 'utf-8');
@@ -264,7 +322,7 @@ export async function getAllDentists(): Promise<Dentist[]> {
       // Continue to public data
     }
 
-    // Try public data
+    // Fallback: Try public data
     const publicPath = path.join(process.cwd(), 'public', 'data', 'dentists.json');
     try {
       const content = await fs.readFile(publicPath, 'utf-8');

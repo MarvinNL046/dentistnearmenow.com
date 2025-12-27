@@ -1,11 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-// Use simplified schema to avoid circular reference issues
-import * as schema from '../../drizzle/schema-simple';
+import * as schema from './schema';
 
 const sql = neon(process.env.DATABASE_URL!);
 export const db = drizzle(sql, { schema });
 
 // Re-export schema for convenience
-export * from '../../drizzle/schema-simple';
+export * from './schema';
