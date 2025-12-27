@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next';
 import { getAllDentists, US_STATES, Dentist } from '@/lib/dentist-data';
 
+// ISR: Revalidate sitemaps every 24 hours
+export const revalidate = 86400;
+
 const BASE_URL = 'https://dentistnearmenow.com';
 
 /**
