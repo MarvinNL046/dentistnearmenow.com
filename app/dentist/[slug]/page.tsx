@@ -70,14 +70,54 @@ export async function generateStaticParams() {
   }));
 }
 
+// Categorize services into dental procedures vs amenities/payments
+function categorizeServices(services?: string[]) {
+  if (!services) return { procedures: [], amenities: [], payments: [] };
+
+  const amenityKeywords = [
+    'wheelchair', 'accessible', 'parking', 'toilet', 'restroom', 'wifi', 'tv',
+    'coffee', 'waiting', 'entrance', 'ramp', 'elevator'
+  ];
+  const paymentKeywords = [
+    'credit', 'debit', 'card', 'cash', 'check', 'nfc', 'mobile payment',
+    'payment plan', 'financing', 'apple pay', 'google pay'
+  ];
+  const nonProcedureKeywords = [
+    'appointment required', 'appointments recommended', 'walk-ins',
+    'online booking', 'same day', 'evening hours', 'weekend hours'
+  ];
+
+  const procedures: string[] = [];
+  const amenities: string[] = [];
+  const payments: string[] = [];
+
+  services.forEach(service => {
+    const lower = service.toLowerCase();
+    if (amenityKeywords.some(k => lower.includes(k))) {
+      amenities.push(service);
+    } else if (paymentKeywords.some(k => lower.includes(k))) {
+      payments.push(service);
+    } else if (nonProcedureKeywords.some(k => lower.includes(k))) {
+      // Skip these - not procedures, amenities, or payments
+    } else {
+      procedures.push(service);
+    }
+  });
+
+  return { procedures, amenities, payments };
+}
+
 // JSON-LD Schema for Dentist
-function generateJsonLd(dentist: NonNullable<Awaited<ReturnType<typeof getDentistBySlug>>>) {
-  const schema = {
+function generateDentistSchema(dentist: NonNullable<Awaited<ReturnType<typeof getDentistBySlug>>>) {
+  const { procedures, amenities, payments } = categorizeServices(dentist.services);
+  const baseUrl = 'https://dentistnearmenow.com';
+
+  return {
     '@context': 'https://schema.org',
     '@type': 'Dentist',
     name: dentist.name,
-    '@id': `https://www.dentistnearmenow.com/dentist/${dentist.slug}`,
-    url: `https://www.dentistnearmenow.com/dentist/${dentist.slug}`,
+    '@id': `${baseUrl}/dentist/${dentist.slug}`,
+    url: `${baseUrl}/dentist/${dentist.slug}`,
     telephone: dentist.phone,
     address: {
       '@type': 'PostalAddress',
@@ -101,22 +141,108 @@ function generateJsonLd(dentist: NonNullable<Awaited<ReturnType<typeof getDentis
     } : undefined,
     image: dentist.photo,
     priceRange: '$$',
-    // openingHours is plain text like "Closed · Opens 8 AM", not JSON - skip for schema
-    openingHoursSpecification: undefined,
     medicalSpecialty: dentist.specialties?.join(', '),
-    availableService: dentist.services?.map(service => ({
+    availableService: procedures.length > 0 ? procedures.map(service => ({
       '@type': 'MedicalProcedure',
       name: service,
-    })),
+    })) : undefined,
+    amenityFeature: amenities.length > 0 ? amenities.map(amenity => ({
+      '@type': 'LocationFeatureSpecification',
+      name: amenity,
+      value: true,
+    })) : undefined,
+    paymentAccepted: payments.length > 0 ? payments.join(', ') : dentist.insuranceAccepted?.join(', '),
     isAcceptingNewPatients: dentist.acceptingNewPatients,
-    paymentAccepted: dentist.insuranceAccepted?.join(', '),
     areaServed: {
       '@type': 'City',
       name: dentist.city,
     },
   };
+}
 
-  return JSON.stringify(schema);
+// JSON-LD Schema for Breadcrumbs
+function generateBreadcrumbSchema(
+  dentist: NonNullable<Awaited<ReturnType<typeof getDentistBySlug>>>,
+  state: { name: string; slug: string } | undefined
+) {
+  const baseUrl = 'https://dentistnearmenow.com';
+  const citySlug = `${dentist.city.toLowerCase().replace(/\s+/g, '-')}-${dentist.stateAbbr.toLowerCase()}`;
+
+  const items = [
+    { name: 'Home', url: baseUrl },
+    { name: 'States', url: `${baseUrl}/state` },
+  ];
+
+  if (state) {
+    items.push({ name: state.name, url: `${baseUrl}/state/${state.slug}` });
+  }
+
+  items.push(
+    { name: dentist.city, url: `${baseUrl}/city/${citySlug}` },
+    { name: dentist.name, url: `${baseUrl}/dentist/${dentist.slug}` }
+  );
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+// JSON-LD Schema for FAQ
+function generateFAQSchema(dentist: NonNullable<Awaited<ReturnType<typeof getDentistBySlug>>>) {
+  const faqs = [
+    {
+      question: `Is ${dentist.name} accepting new patients?`,
+      answer: dentist.acceptingNewPatients
+        ? `Yes, ${dentist.name} is currently accepting new patients. Contact them directly to schedule your first appointment.`
+        : `Contact ${dentist.name} directly to inquire about new patient availability.`,
+    },
+    {
+      question: `What services does ${dentist.name} offer?`,
+      answer: dentist.services && dentist.services.length > 0
+        ? `${dentist.name} offers ${dentist.services.slice(0, 3).join(', ')}${dentist.services.length > 3 ? ', and more' : ''}.`
+        : `Contact ${dentist.name} for a complete list of dental services offered.`,
+    },
+    {
+      question: `Does ${dentist.name} offer emergency dental services?`,
+      answer: dentist.emergencyServices
+        ? `Yes, ${dentist.name} provides emergency dental services. Call them immediately if you have a dental emergency.`
+        : `Contact ${dentist.name} directly to inquire about emergency dental care availability.`,
+    },
+  ];
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+// Combined JSON-LD output
+function generateJsonLd(
+  dentist: NonNullable<Awaited<ReturnType<typeof getDentistBySlug>>>,
+  state: { name: string; slug: string } | undefined
+) {
+  const schemas = [
+    generateDentistSchema(dentist),
+    generateBreadcrumbSchema(dentist, state),
+    generateFAQSchema(dentist),
+  ];
+
+  return JSON.stringify(schemas);
 }
 
 export default async function DentistPage({ params }: PageProps) {
@@ -143,7 +269,7 @@ export default async function DentistPage({ params }: PageProps) {
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: generateJsonLd(dentist) }}
+        dangerouslySetInnerHTML={{ __html: generateJsonLd(dentist, state ?? undefined) }}
       />
 
       <div className="bg-background">
