@@ -9,6 +9,7 @@ import { getDentistsByCity, getStateByAbbr, getAllDentists } from '@/lib/dentist
 import DentistCard from '@/components/DentistCard';
 import NearbyLocations from '@/components/NearbyLocations';
 import QuickGuides from '@/components/QuickGuides';
+import { InArticleAd } from '@/components/AdUnit';
 
 interface PageProps {
   params: Promise<{ city: string }>;
@@ -180,6 +181,9 @@ export default async function CityPage({ params }: PageProps) {
             </Link>
           </div>
         )}
+
+        {/* Ad placement between listings and content */}
+        {dentists.length > 0 && <InArticleAd />}
       </div>
 
       {/* City Info Section */}

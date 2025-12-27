@@ -26,6 +26,7 @@ import RelatedDentists from '@/components/RelatedDentists';
 import ServiceLinks from '@/components/ServiceLinks';
 import QuickGuides from '@/components/QuickGuides';
 import NearbyLocations from '@/components/NearbyLocations';
+import { InArticleAd, SidebarAd } from '@/components/AdUnit';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -594,9 +595,15 @@ export default async function DentistPage({ params }: PageProps) {
               <div className="bg-white rounded-xl border p-6">
                 <QuickGuides context={guideContext} />
               </div>
+
+              {/* Sidebar Ad */}
+              <SidebarAd />
             </div>
           </div>
         </div>
+
+        {/* Ad before FAQ */}
+        <InArticleAd className="container mx-auto px-4" />
 
         {/* FAQ Section - EEAT */}
         <section className="py-16 bg-gray-50">

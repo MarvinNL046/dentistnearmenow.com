@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type AdFormat = 'display' | 'in-article' | 'in-feed' | 'multiplex';
 type AdLayout = 'horizontal' | 'vertical' | 'rectangle';
@@ -25,10 +25,39 @@ export default function AdUnit({
 }: AdUnitProps) {
   const adRef = useRef<HTMLDivElement>(null);
   const isAdLoaded = useRef(false);
+  const [hasConsent, setHasConsent] = useState(false);
+
+  // Check for advertising consent
+  useEffect(() => {
+    const checkConsent = () => {
+      const savedConsent = localStorage.getItem('cookieConsent');
+      if (savedConsent) {
+        try {
+          const parsed = JSON.parse(savedConsent);
+          setHasConsent(parsed.advertising === true);
+        } catch {
+          setHasConsent(false);
+        }
+      }
+    };
+
+    checkConsent();
+
+    // Listen for consent updates from CookieConsent component
+    const handleConsentUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setHasConsent(customEvent.detail?.advertising === true);
+    };
+
+    window.addEventListener('cookieConsentUpdated', handleConsentUpdate);
+    return () => {
+      window.removeEventListener('cookieConsentUpdated', handleConsentUpdate);
+    };
+  }, []);
 
   useEffect(() => {
-    // Only load ad once
-    if (isAdLoaded.current) return;
+    // Only load ad if consent is given and not already loaded
+    if (!hasConsent || isAdLoaded.current) return;
 
     try {
       // Check if adsbygoogle is available
@@ -39,7 +68,7 @@ export default function AdUnit({
     } catch (err) {
       console.error('AdSense error:', err);
     }
-  }, []);
+  }, [hasConsent]);
 
   // Get dimensions based on layout
   const getDimensions = () => {
@@ -57,6 +86,11 @@ export default function AdUnit({
 
   const dimensions = getDimensions();
 
+  // Don't render ad container if no consent
+  if (!hasConsent) {
+    return null;
+  }
+
   return (
     <div
       ref={adRef}
@@ -68,23 +102,19 @@ export default function AdUnit({
         textAlign: 'center'
       }}
     >
-      {/* Visual placeholder during development/before ad loads */}
-      <div className="bg-muted/30 border border-dashed border-muted-foreground/20 rounded-lg flex items-center justify-center text-muted-foreground/50 text-xs"
-           style={dimensions}>
-        <ins
-          className="adsbygoogle"
-          style={{
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            minHeight: dimensions.minHeight
-          }}
-          data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID || 'ca-pub-9667530069853985'}
-          data-ad-slot={slot}
-          data-ad-format={responsive ? 'auto' : format}
-          data-full-width-responsive={responsive ? 'true' : 'false'}
-        />
-      </div>
+      <ins
+        className="adsbygoogle"
+        style={{
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          minHeight: dimensions.minHeight
+        }}
+        data-ad-client="ca-pub-9667530069853985"
+        data-ad-slot={slot}
+        data-ad-format={responsive ? 'auto' : format}
+        data-full-width-responsive={responsive ? 'true' : 'false'}
+      />
     </div>
   );
 }
