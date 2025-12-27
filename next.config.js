@@ -56,15 +56,34 @@ const nextConfig = {
       // Bijvoorbeeld als jullie oude URL structuur hadden
     ]
   },
+  async rewrites() {
+    return [
+      {
+        // Rewrite /sitemap.xml to the sitemap index API route
+        source: '/sitemap.xml',
+        destination: '/api/sitemap-index',
+      },
+    ]
+  },
   async headers() {
     return [
       {
-        // Voeg cache headers toe voor sitemap
+        // Cache headers for sitemap index
         source: '/sitemap.xml',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+            value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
+        // Cache headers for individual sitemaps
+        source: '/sitemap/:id.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400',
           },
         ],
       },
