@@ -401,6 +401,36 @@ export async function getDentistsByCity(city: string, state?: string): Promise<D
   });
 }
 
+// ===== STATS FUNCTIONS =====
+
+export interface DentistStats {
+  totalDentists: number;
+  totalCities: number;
+  totalStates: number;
+  avgRating: number;
+}
+
+export async function getDentistStats(): Promise<DentistStats> {
+  const dentists = await getAllDentists();
+
+  // Calculate unique cities and states
+  const cities = new Set(dentists.map(d => `${d.city}-${d.stateAbbr}`).filter(c => c !== '-'));
+  const states = new Set(dentists.map(d => d.stateAbbr).filter(Boolean));
+
+  // Calculate average rating
+  const ratingsWithValues = dentists.filter(d => d.rating && d.rating > 0);
+  const avgRating = ratingsWithValues.length > 0
+    ? ratingsWithValues.reduce((sum, d) => sum + (d.rating || 0), 0) / ratingsWithValues.length
+    : 0;
+
+  return {
+    totalDentists: dentists.length,
+    totalCities: cities.size,
+    totalStates: states.size,
+    avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal
+  };
+}
+
 // ===== TYPE FUNCTIONS =====
 
 export function getAllTypes(): DentistType[] {

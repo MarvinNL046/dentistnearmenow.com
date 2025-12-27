@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Search, MapPin, Clock, Phone, Star, Shield, CheckCircle, Users, Award, AlertTriangle, ChevronRight, Heart, Stethoscope } from 'lucide-react';
-import { US_STATES } from '@/lib/dentist-data';
+import { US_STATES, getDentistStats } from '@/lib/dentist-data';
 import { Button } from '@/components/ui/button';
+
+// ISR - revalidate stats every 24 hours
+export const revalidate = 86400;
 
 const dentalServices = [
   { slug: 'general-dentist', name: 'General Dentistry', icon: '🦷', description: 'Routine checkups, cleanings, and preventive care' },
@@ -48,7 +51,10 @@ const trustIndicators = [
   { icon: CheckCircle, title: 'Free to Use', description: 'Search and contact dentists at no cost' },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch dynamic stats from database
+  const stats = await getDentistStats();
+
   // Group states by region for display
   const featuredStates = US_STATES.slice(0, 12);
 
@@ -125,20 +131,20 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-primary mb-2">50</div>
+              <div className="text-4xl font-bold text-primary mb-2">{stats.totalStates}</div>
               <div className="text-muted-foreground">States Covered</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary mb-2">3,200+</div>
+              <div className="text-4xl font-bold text-primary mb-2">{stats.totalCities.toLocaleString()}</div>
               <div className="text-muted-foreground">Cities</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary mb-2">1000s</div>
+              <div className="text-4xl font-bold text-primary mb-2">{stats.totalDentists.toLocaleString()}</div>
               <div className="text-muted-foreground">Dentists</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-primary mb-2">Free</div>
-              <div className="text-muted-foreground">To Use</div>
+              <div className="text-4xl font-bold text-primary mb-2">{stats.avgRating}★</div>
+              <div className="text-muted-foreground">Avg Rating</div>
             </div>
           </div>
         </div>
