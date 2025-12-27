@@ -22,3 +22,4 @@ data/discovery/
 .vscode/
 .idea/
 .vercel
+.env.openai
