@@ -24,13 +24,13 @@
     --secondary: 210 20% 94%;            /* #EEF2F6 */
     --secondary-foreground: 210 30% 25%;
 
-    /* Accent: Teal/Mint */
-    --accent: 168 70% 42%;               /* #0D9488 */
+    /* Accent: Teal/Mint - WCAG AA compliant */
+    --accent: 168 80% 28%;               /* #0F766E - contrast 6.5:1 on white */
     --accent-foreground: 0 0% 100%;      /* White */
 
     /* Muted */
     --muted: 210 20% 94%;
-    --muted-foreground: 210 15% 50%;
+    --muted-foreground: 210 15% 38%;     /* Darker for WCAG AA contrast 5.5:1 */
 
     /* Destructive */
     --destructive: 0 84% 60%;

@@ -74,6 +74,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preconnect hints for faster resource loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googletagservices.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
         {/* Google Consent Mode - Must be set before AdSense loads */}
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`

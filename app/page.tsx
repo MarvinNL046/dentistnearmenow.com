@@ -153,6 +153,7 @@ export default async function HomePage() {
       {/* Trust Indicators */}
       <section className="py-16">
         <div className="container mx-auto px-4">
+          <h2 className="sr-only">Why Trust DentistNearMeNow</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {trustIndicators.map((item) => {
               const Icon = item.icon;
@@ -201,7 +202,7 @@ export default async function HomePage() {
       </section>
 
       {/* Emergency CTA */}
-      <section className="py-12 bg-red-50 border-y border-red-100">
+      <section className="py-12 bg-red-50 border-y border-red-100" aria-labelledby="emergency-heading">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -209,7 +210,7 @@ export default async function HomePage() {
                 <Phone className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-red-900">Dental Emergency?</h3>
+                <h2 id="emergency-heading" className="text-xl font-bold text-red-900">Dental Emergency?</h2>
                 <p className="text-red-700">Find 24/7 emergency dental care near you right now</p>
               </div>
             </div>
