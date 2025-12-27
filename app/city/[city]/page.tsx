@@ -45,18 +45,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Only pre-generate top 50 cities by dentist count
+// Rest will be generated on-demand via ISR
 export async function generateStaticParams() {
   const dentists = await getAllDentists();
-  const cityStateSet = new Set<string>();
+  const cityCounts = new Map<string, number>();
 
   dentists.forEach((d) => {
     if (d.city && d.stateAbbr) {
       const slug = `${d.city.toLowerCase().replace(/\s+/g, '-')}-${d.stateAbbr.toLowerCase()}`;
-      cityStateSet.add(slug);
+      cityCounts.set(slug, (cityCounts.get(slug) || 0) + 1);
     }
   });
 
-  return Array.from(cityStateSet).map((city) => ({ city }));
+  // Sort by dentist count and take top 50
+  const topCities = Array.from(cityCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 50)
+    .map(([city]) => ({ city }));
+
+  return topCities;
 }
 
 export default async function CityPage({ params }: PageProps) {

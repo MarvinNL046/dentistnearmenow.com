@@ -40,20 +40,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Only pre-generate top 30 cities with emergency dentists
+// Rest will be generated on-demand via ISR
 export async function generateStaticParams() {
   const dentists = await getAllDentists();
-  const cityStateSet = new Set<string>();
+  const cityCounts = new Map<string, number>();
 
   dentists
     .filter(d => d.emergencyServices)
     .forEach((d) => {
       if (d.city && d.stateAbbr) {
         const slug = `${d.city.toLowerCase().replace(/\s+/g, '-')}-${d.stateAbbr.toLowerCase()}`;
-        cityStateSet.add(slug);
+        cityCounts.set(slug, (cityCounts.get(slug) || 0) + 1);
       }
     });
 
-  return Array.from(cityStateSet).map((city) => ({ city }));
+  // Sort by emergency dentist count and take top 30
+  const topCities = Array.from(cityCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 30)
+    .map(([city]) => ({ city }));
+
+  return topCities;
 }
 
 export default async function EmergencyCityPage({ params }: PageProps) {

@@ -21,6 +21,7 @@ import { getDentistBySlug, getAllDentists, getStateByAbbr } from '@/lib/dentist-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import DentistImage from '@/components/DentistImage';
+import AboutSection from '@/components/AboutSection';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -49,9 +50,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Only pre-generate top 100 dentists by review count for fast initial load
+// Rest will be generated on-demand via ISR
 export async function generateStaticParams() {
   const dentists = await getAllDentists();
-  return dentists.map((dentist) => ({
+
+  // Sort by review count (popularity) and take top 100
+  const topDentists = dentists
+    .filter(d => d.reviewCount && d.reviewCount > 0)
+    .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
+    .slice(0, 100);
+
+  return topDentists.map((dentist) => ({
     slug: dentist.slug,
   }));
 }
@@ -237,12 +247,11 @@ export default async function DentistPage({ params }: PageProps) {
 
               {/* About Section */}
               {dentist.description && (
-                <div className="bg-white rounded-xl border p-6">
-                  <h2 className="text-xl font-semibold mb-4">About {dentist.name}</h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {dentist.description}
-                  </p>
-                </div>
+                <AboutSection
+                  name={dentist.name}
+                  description={dentist.description}
+                  maxLength={350}
+                />
               )}
 
               {/* Services */}
