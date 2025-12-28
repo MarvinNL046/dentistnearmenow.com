@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/best-dentists', label: 'Best Dentists' },
+  { href: '/best-dentists', label: 'Best Dentists', highlight: true },
   { href: '/state', label: 'Browse by State' },
   { href: '/services', label: 'Services' },
   { href: '/guides', label: 'Dental Guides' },
@@ -98,7 +98,11 @@ export default function Header() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    link.highlight
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -210,7 +214,11 @@ export default function Header() {
                   <Link
                     href={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block px-4 py-3 rounded-lg transition-colors text-foreground hover:bg-secondary/50"
+                    className={`block px-4 py-3 rounded-lg transition-colors ${
+                      link.highlight
+                        ? 'bg-amber-500 text-white hover:bg-amber-600'
+                        : 'text-foreground hover:bg-secondary/50'
+                    }`}
                   >
                     {link.label}
                   </Link>
