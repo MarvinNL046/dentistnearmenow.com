@@ -103,7 +103,7 @@ export default async function EmergencyDentistPage() {
               Many dentists offer same-day emergency appointments.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:1-800-DENTIST">
+              <a href="tel:1-800-336-8478">
                 <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100">
                   <Phone className="w-5 h-5 mr-2" />
                   Call 1-800-DENTIST
@@ -348,7 +348,7 @@ export default async function EmergencyDentistPage() {
             helpline for immediate assistance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="tel:1-800-DENTIST">
+            <a href="tel:1-800-336-8478">
               <Button size="lg" className="bg-white text-red-600 hover:bg-gray-100">
                 <Phone className="w-5 h-5 mr-2" />
                 Call 1-800-DENTIST
