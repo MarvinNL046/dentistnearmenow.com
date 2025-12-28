@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronRight, MapPin, Users, Phone } from 'lucide-react';
+import { ChevronRight, MapPin, Users, Phone, Trophy } from 'lucide-react';
 
 // ISR: Revalidate every 24 hours
 export const revalidate = 86400;
@@ -126,6 +126,15 @@ export default async function CityPage({ params }: PageProps) {
                   <span>{emergencyDentists.length} Emergency Dentists</span>
                 </Link>
               )}
+              {dentists.length >= 5 && (
+                <Link
+                  href={`/best-dentists/${citySlug}`}
+                  className="flex items-center gap-2 bg-amber-500/80 hover:bg-amber-500 px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Trophy className="w-4 h-4" />
+                  <span>Top Rated Dentists</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -225,6 +234,23 @@ export default async function CityPage({ params }: PageProps) {
               who provides excellent care and makes you feel comfortable.
             </p>
 
+            {dentists.length >= 5 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 not-prose mb-4">
+                <h4 className="font-semibold text-amber-800 mb-2">Looking for the Best Dentist in {parsed.city}?</h4>
+                <p className="text-amber-700 text-sm mb-3">
+                  See our ranked list of top-rated dentists based on verified patient reviews
+                  using our transparent Bayesian scoring system.
+                </p>
+                <Link
+                  href={`/best-dentists/${citySlug}`}
+                  className="inline-flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700"
+                >
+                  <Trophy className="w-4 h-4" />
+                  View Top Rated Dentists
+                </Link>
+              </div>
+            )}
+
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 not-prose">
               <h4 className="font-semibold text-red-800 mb-2">Need Emergency Dental Care?</h4>
               <p className="text-red-700 text-sm mb-3">
@@ -318,6 +344,18 @@ export default async function CityPage({ params }: PageProps) {
                 <p className="text-sm text-muted-foreground">Extractions & more</p>
               </div>
             </Link>
+            {dentists.length >= 5 && (
+              <Link
+                href={`/best-dentists/${citySlug}`}
+                className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl hover:bg-amber-100 border border-transparent hover:border-amber-200 transition-all group"
+              >
+                <span className="text-2xl">🏆</span>
+                <div>
+                  <p className="font-medium text-amber-700">Top Rated</p>
+                  <p className="text-sm text-amber-600">Best dentists ranked</p>
+                </div>
+              </Link>
+            )}
             <Link
               href={`/services`}
               className="flex items-center gap-3 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 border border-primary/20 transition-all group"

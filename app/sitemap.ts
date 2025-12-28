@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllDentists, US_STATES, Dentist } from '@/lib/dentist-data';
+import { getIndexablePages } from '@/lib/top10';
 
 // ISR: Revalidate sitemaps every 24 hours
 export const revalidate = 86400;
@@ -55,7 +56,7 @@ export default async function sitemap(props: {
 
   // Sitemap 0: Static pages
   if (id === 0) {
-    return generateStaticSitemap();
+    return await generateStaticSitemap();
   }
 
   // Sitemaps 1-51: State-based sitemaps
@@ -71,7 +72,7 @@ export default async function sitemap(props: {
 /**
  * Generate sitemap for static pages
  */
-function generateStaticSitemap(): MetadataRoute.Sitemap {
+async function generateStaticSitemap(): Promise<MetadataRoute.Sitemap> {
   const sitemap: MetadataRoute.Sitemap = [];
   const now = new Date();
 
@@ -92,7 +93,7 @@ function generateStaticSitemap(): MetadataRoute.Sitemap {
   });
 
   // Pillar pages - priority 0.9
-  const pillarPages = ['/services', '/state', '/emergency-dentist', '/guides'];
+  const pillarPages = ['/services', '/state', '/emergency-dentist', '/guides', '/best-dentists'];
   pillarPages.forEach(page => {
     sitemap.push({
       url: `${BASE_URL}${page}`,
@@ -172,6 +173,20 @@ function generateStaticSitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.3,
+    });
+  });
+
+  // Best dentists pages (Top 10) - priority 0.8
+  // These are programmatic SEO pages with high value
+  const indexablePages = await getIndexablePages();
+  indexablePages.forEach(page => {
+    // Convert slug from "best-dentists-chicago-il" to URL path
+    const cityStatePart = page.slug.replace('best-dentists-', '');
+    sitemap.push({
+      url: `${BASE_URL}/best-dentists/${cityStatePart}`,
+      lastModified: page.updated_at ? new Date(page.updated_at) : now,
+      changeFrequency: 'daily',
+      priority: 0.85, // High priority for these ranking pages
     });
   });
 
