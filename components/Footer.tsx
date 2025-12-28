@@ -37,12 +37,12 @@ const guides = [
 ];
 
 const popularCities = [
-  { href: '/city/los-angeles-ca', label: 'Los Angeles, CA' },
-  { href: '/city/new-york-ny', label: 'New York, NY' },
-  { href: '/city/chicago-il', label: 'Chicago, IL' },
-  { href: '/city/houston-tx', label: 'Houston, TX' },
-  { href: '/city/phoenix-az', label: 'Phoenix, AZ' },
-  { href: '/city/philadelphia-pa', label: 'Philadelphia, PA' },
+  { href: '/best-dentists/chicago-il', label: 'Chicago, IL' },
+  { href: '/best-dentists/atlanta-ga', label: 'Atlanta, GA' },
+  { href: '/best-dentists/houston-tx', label: 'Houston, TX' },
+  { href: '/best-dentists/new-york-ny', label: 'New York, NY' },
+  { href: '/best-dentists/los-angeles-ca', label: 'Los Angeles, CA' },
+  { href: '/best-dentists/phoenix-az', label: 'Phoenix, AZ' },
 ];
 
 const information = [
@@ -56,6 +56,7 @@ const information = [
 
 const quickLinks = [
   { href: '/search', label: 'Search Dentists' },
+  { href: '/best-dentists', label: 'Best Dentists' },
   { href: '/emergency-dentist', label: 'Emergency Dentist' },
   { href: '/state', label: 'Browse by State' },
   { href: '/services', label: 'All Services' },
@@ -246,9 +247,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Popular Cities */}
+          {/* Top Rated Cities */}
           <div>
-            <h4 className="font-semibold mb-4 text-teal-300">Popular Cities</h4>
+            <h4 className="font-semibold mb-4 text-teal-300">Top Rated Cities</h4>
             <ul className="space-y-1">
               {popularCities.map((link) => (
                 <li key={link.href}>
@@ -262,10 +263,10 @@ export default function Footer() {
               ))}
               <li>
                 <Link
-                  href="/state"
+                  href="/best-dentists"
                   className="inline-flex items-center gap-1 py-1 text-teal-300 hover:text-white transition-colors text-sm font-medium"
                 >
-                  More Cities
+                  View All Cities
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </li>
