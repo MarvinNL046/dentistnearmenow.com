@@ -74,7 +74,7 @@ export default function DentalEmergenciesGuide() {
                     <li>1. <strong>Find the tooth</strong> - Handle by crown (top) only, never touch the root</li>
                     <li>2. <strong>Rinse gently</strong> - If dirty, rinse briefly with milk or saline (10 seconds max)</li>
                     <li>3. <strong>Reinsert if possible</strong> - Place back in socket, bite down on gauze to hold</li>
-                    <li>4. <strong>If can't reinsert</strong> - Store in cold milk, saline, or between cheek and gum</li>
+                    <li>4. <strong>If can't reinsert</strong> - Store in cold milk or between cheek and gum</li>
                     <li>5. <strong>See dentist immediately</strong> - Call ahead, get there within 30 minutes</li>
                   </ol>
                 </div>
