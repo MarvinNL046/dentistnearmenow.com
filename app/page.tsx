@@ -1,21 +1,21 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Search, MapPin, Clock, Phone, Star, Shield, CheckCircle, Users, Award, AlertTriangle, ChevronRight, Heart, Stethoscope } from 'lucide-react';
+import { Search, MapPin, Clock, Phone, Star, Shield, CheckCircle, Users, Award, AlertTriangle, ChevronRight, Heart, Stethoscope, Sparkles, Smile, Baby, Building2, Activity, Syringe, LucideIcon } from 'lucide-react';
 import { US_STATES, getDentistStats } from '@/lib/dentist-data';
 import { Button } from '@/components/ui/button';
 
 // ISR - revalidate stats every 24 hours
 export const revalidate = 86400;
 
-const dentalServices = [
-  { slug: 'general-dentist', name: 'General Dentistry', icon: '🦷', description: 'Routine checkups, cleanings, and preventive care' },
-  { slug: 'cosmetic-dentist', name: 'Cosmetic Dentistry', icon: '✨', description: 'Teeth whitening, veneers, and smile makeovers' },
-  { slug: 'orthodontist', name: 'Orthodontics', icon: '😁', description: 'Braces, Invisalign, and teeth alignment' },
-  { slug: 'emergency-dentist', name: 'Emergency Care', icon: '🚨', description: '24/7 emergency dental services' },
-  { slug: 'pediatric-dentist', name: 'Pediatric Dentistry', icon: '👶', description: 'Specialized care for children' },
-  { slug: 'oral-surgeon', name: 'Oral Surgery', icon: '🏥', description: 'Extractions, implants, and surgical procedures' },
-  { slug: 'periodontist', name: 'Periodontics', icon: '🩺', description: 'Gum disease treatment and prevention' },
-  { slug: 'endodontist', name: 'Endodontics', icon: '💉', description: 'Root canals and dental pain relief' },
+const dentalServices: { slug: string; name: string; icon: LucideIcon; description: string }[] = [
+  { slug: 'general-dentist', name: 'General Dentistry', icon: Stethoscope, description: 'Routine checkups, cleanings, and preventive care' },
+  { slug: 'cosmetic-dentist', name: 'Cosmetic Dentistry', icon: Sparkles, description: 'Teeth whitening, veneers, and smile makeovers' },
+  { slug: 'orthodontist', name: 'Orthodontics', icon: Smile, description: 'Braces, Invisalign, and teeth alignment' },
+  { slug: 'emergency-dentist', name: 'Emergency Care', icon: AlertTriangle, description: '24/7 emergency dental services' },
+  { slug: 'pediatric-dentist', name: 'Pediatric Dentistry', icon: Baby, description: 'Specialized care for children' },
+  { slug: 'oral-surgeon', name: 'Oral Surgery', icon: Building2, description: 'Extractions, implants, and surgical procedures' },
+  { slug: 'periodontist', name: 'Periodontics', icon: Activity, description: 'Gum disease treatment and prevention' },
+  { slug: 'endodontist', name: 'Endodontics', icon: Syringe, description: 'Root canals and dental pain relief' },
 ];
 
 export const metadata: Metadata = {
@@ -80,7 +80,7 @@ export default async function HomePage() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Find a <span className="text-accent">Dentist</span> Near You
+              Find a <span className="bg-accent px-3 py-1 rounded-lg">Dentist</span> Near You
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
               Search thousands of dentists, dental clinics, and specialists across all 50 states.
@@ -184,19 +184,24 @@ export default async function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dentalServices.map((service) => (
-              <Link
-                key={service.slug}
-                href={`/search?type=${service.slug}`}
-                className="group bg-white p-6 rounded-xl border hover:shadow-lg hover:border-primary transition-all"
-              >
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                  {service.name}
-                </h3>
-                <p className="text-muted-foreground text-sm">{service.description}</p>
-              </Link>
-            ))}
+            {dentalServices.map((service) => {
+              const Icon = service.icon;
+              return (
+                <Link
+                  key={service.slug}
+                  href={`/search?type=${service.slug}`}
+                  className="group bg-white p-6 rounded-xl border hover:shadow-lg hover:border-primary transition-all"
+                >
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                    {service.name}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">{service.description}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
