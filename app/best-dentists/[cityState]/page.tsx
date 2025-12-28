@@ -57,11 +57,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// Pre-generate top 20 cities for fast initial load
-// Rest will be generated on-demand via ISR
+// All pages generated on-demand via ISR (no static generation at build time)
+// This avoids database connection issues during Vercel build
 export async function generateStaticParams() {
-  const topCities = await getTopCitiesForStaticGen(20);
-  return topCities.map((cityState) => ({ cityState }));
+  return [];
 }
 
 // JSON-LD Schema for ItemList

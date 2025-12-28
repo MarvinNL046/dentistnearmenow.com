@@ -15,8 +15,8 @@ import { US_STATES } from '@/lib/dentist-data';
 import { Badge } from '@/components/ui/badge';
 import { LeaderboardAd, InArticleAd } from '@/components/AdUnit';
 
-// ISR: Revalidate every hour
-export const revalidate = 3600;
+// Dynamic rendering - fetch data on each request
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Best Dentists by City - Top Rated Dental Practices (2025)',
