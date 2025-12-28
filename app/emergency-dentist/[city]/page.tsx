@@ -107,7 +107,7 @@ export default async function EmergencyCityPage({ params }: PageProps) {
                 <Clock className="w-4 h-4" />
                 <span>{emergencyDentists.length} Emergency Dentists</span>
               </div>
-              <a href="tel:1-800-DENTIST">
+              <a href="tel:1-800-336-8478">
                 <Button className="bg-white text-red-600 hover:bg-gray-100">
                   <Phone className="w-4 h-4 mr-2" />
                   Call 1-800-DENTIST
@@ -148,7 +148,7 @@ export default async function EmergencyCityPage({ params }: PageProps) {
                 Try these alternatives:
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="tel:1-800-DENTIST">
+                <a href="tel:1-800-336-8478">
                   <Button variant="outline" className="border-amber-500 text-amber-700 hover:bg-amber-100">
                     <Phone className="w-4 h-4 mr-2" />
                     Call 1-800-DENTIST
@@ -274,6 +274,24 @@ export default async function EmergencyCityPage({ params }: PageProps) {
                 </Button>
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Disclaimer Section */}
+      <section className="py-8 bg-gray-100 border-t">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="font-semibold text-sm text-gray-700 mb-2">Disclaimer</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              The information provided on this page is for general informational purposes only and is not intended
+              as, nor should it be considered, professional medical or dental advice. Always seek the advice of a
+              qualified dental professional for any questions regarding a dental emergency or medical condition.
+              If you are experiencing a life-threatening emergency, call 911 immediately. 1-800-DENTIST is an
+              independent third-party dental referral service and is not affiliated with DentistNearMeNow.com.
+              We do not endorse or guarantee the services provided by any dentist or referral service. Response
+              times and availability of emergency dental services may vary by location.
+            </p>
           </div>
         </div>
       </section>
