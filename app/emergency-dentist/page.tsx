@@ -363,6 +363,24 @@ export default async function EmergencyDentistPage() {
           </div>
         </div>
       </section>
+
+      {/* Disclaimer Section */}
+      <section className="py-8 bg-gray-100 border-t">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="font-semibold text-sm text-gray-700 mb-2">Disclaimer</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              The information provided on this page is for general informational purposes only and is not intended
+              as, nor should it be considered, professional medical or dental advice. Always seek the advice of a
+              qualified dental professional for any questions regarding a dental emergency or medical condition.
+              If you are experiencing a life-threatening emergency, call 911 immediately. 1-800-DENTIST is an
+              independent third-party dental referral service and is not affiliated with DentistNearMeNow.com.
+              We do not endorse or guarantee the services provided by any dentist or referral service. Response
+              times and availability of emergency dental services may vary by location.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
