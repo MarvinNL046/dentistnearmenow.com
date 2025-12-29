@@ -65,9 +65,8 @@ export default function robots(): MetadataRoute.Robots {
       //   disallow: '/',
       // },
     ],
-    // Reference all sitemaps for comprehensive crawling
-    // Sitemap 0: Static pages, Sitemaps 1-51: State-based (50 states + DC)
-    sitemap: Array.from({ length: 52 }, (_, i) => `${baseUrl}/sitemap/${i}.xml`),
+    // Reference the sitemap index (which contains all 52 child sitemaps)
+    sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,
   };
 }
