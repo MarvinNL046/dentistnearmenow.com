@@ -96,7 +96,7 @@ export default function RelatedDentists({
                   {dentist.photo ? (
                     <img
                       src={dentist.photo}
-                      alt={dentist.name}
+                      alt={`${dentist.name} - dentist photo`}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -167,7 +167,7 @@ export default function RelatedDentists({
                 {dentist.photo ? (
                   <img
                     src={dentist.photo}
-                    alt={dentist.name}
+                    alt={`${dentist.name} - dentist photo`}
                     className="w-full h-full object-cover"
                   />
                 ) : (

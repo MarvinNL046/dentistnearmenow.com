@@ -36,7 +36,7 @@ export default function DentistCard({ dentist, showDistance, distance }: Dentist
             {dentist.photo && !imageError ? (
               <img
                 src={dentist.photo}
-                alt={dentist.name}
+                alt={`${dentist.name} - dental practice`}
                 className="w-full h-full object-cover"
                 onError={() => setImageError(true)}
                 loading="lazy"

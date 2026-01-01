@@ -373,7 +373,7 @@ export default function ReviewSection({
                       {review.reviewer_image_url ? (
                         <img
                           src={review.reviewer_image_url}
-                          alt=""
+                          alt={`${review.reviewer_name} profile photo`}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
