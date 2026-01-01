@@ -57,9 +57,12 @@ export default function NotFound() {
                   className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 />
               </div>
-              <Button type="submit" className="px-6">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium transition-colors"
+              >
                 Search
-              </Button>
+              </button>
             </form>
           </div>
 
