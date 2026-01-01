@@ -90,7 +90,6 @@ export default function AdUnit({
         isAdLoaded.current = true;
       }
     } catch (err) {
-      console.error('AdSense error:', err);
     }
   }, [hasConsent]);
 

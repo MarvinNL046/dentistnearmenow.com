@@ -36,7 +36,6 @@ export default function ImpersonationBanner() {
         router.push('/admin/users');
       }
     } catch (error) {
-      console.error('Error stopping impersonation:', error);
     } finally {
       setLoading(false);
     }

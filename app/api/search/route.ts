@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       filters: { state, type, city, emergency, sedation },
     });
   } catch (error) {
-    console.error('Search error:', error);
     return NextResponse.json(
       { error: 'Search failed' },
       { status: 500 }

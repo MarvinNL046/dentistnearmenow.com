@@ -80,8 +80,7 @@ export default function GoogleConsent() {
         strategy="afterInteractive"
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9667530069853985"
         crossOrigin="anonymous"
-        onError={(e) => {
-          console.log('AdSense script failed to load:', e);
+        onError={() => {
         }}
       />
 

@@ -35,7 +35,6 @@ export default function PhotoGallery({ cemeterySlug, cemeteryName }: PhotoGaller
         const data = await response.json();
         setPhotos(data.photos || []);
       } catch (error) {
-        console.error('Error fetching photos:', error);
       } finally {
         setLoading(false);
       }

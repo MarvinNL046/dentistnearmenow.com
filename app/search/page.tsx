@@ -123,7 +123,6 @@ function SearchContent() {
         setDisplayedResults(results.slice(0, ITEMS_PER_PAGE));
       }
     } catch (error) {
-      console.error('Search error:', error);
     } finally {
       setLoading(false);
     }

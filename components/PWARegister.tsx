@@ -8,7 +8,6 @@ export default function PWARegister() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('PWA: Service Worker registered with scope:', registration.scope);
 
           // Check for updates
           registration.addEventListener('updatefound', () => {
@@ -17,14 +16,12 @@ export default function PWARegister() {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   // New content available, show update notification
-                  console.log('PWA: New content available, please refresh.');
                 }
               });
             }
           });
         })
         .catch((error) => {
-          console.error('PWA: Service Worker registration failed:', error);
         });
     }
   }, []);

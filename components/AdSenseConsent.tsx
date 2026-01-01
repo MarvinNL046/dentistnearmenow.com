@@ -57,7 +57,6 @@ export default function AdSenseConsent() {
           try {
             ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
           } catch (e) {
-            console.error('AdSense initialization error:', e);
           }
         }}
       />

@@ -41,7 +41,6 @@ export default function FavoriteButton({
           setIsLoggedIn(true);
         }
       } catch (error) {
-        console.error('Error checking favorite status:', error);
         setIsLoggedIn(false);
       } finally {
         setIsLoading(false);
@@ -87,7 +86,6 @@ export default function FavoriteButton({
         }
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
     } finally {
       setIsToggling(false);
     }

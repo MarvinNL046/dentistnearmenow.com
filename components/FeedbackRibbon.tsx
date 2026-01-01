@@ -80,7 +80,6 @@ export default function FeedbackRibbon() {
         setRating(0);
       }, 3000);
     } catch (error) {
-      console.error('Error submitting feedback:', error);
     } finally {
       setIsSubmitting(false);
     }

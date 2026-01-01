@@ -36,7 +36,6 @@ export default function AdBanner({
 
     // Check if AdSense script is loaded
     if (!(window as any).adsbygoogle) {
-      console.log('AdSense script not yet loaded, retrying...');
       setTimeout(loadAd, 500);
       return;
     }
@@ -51,7 +50,6 @@ export default function AdBanner({
       ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
       isAdPushed.current = true;
     } catch (err) {
-      console.error('AdSense push error:', err);
       setAdError(true);
     }
   }, [hasConsent]);
@@ -66,7 +64,6 @@ export default function AdBanner({
           setHasConsent(parsed.advertising === true);
         }
       } catch (e) {
-        console.error('Error reading consent:', e);
       }
       setIsLoading(false);
     };

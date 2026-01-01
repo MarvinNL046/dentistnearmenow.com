@@ -107,7 +107,6 @@ export default function ReviewSection({
           setStats(data.stats || null);
         }
       } catch (err) {
-        console.error('Failed to fetch reviews:', err);
       } finally {
         setLoading(false);
       }
