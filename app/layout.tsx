@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://www.dentistnearmenow.com",
+    url: "https://dentistnearmenow.com",
     title: "Dentist Near Me Now - Find Dentists in the USA",
     description: "Find dentists, dental clinics, and orthodontists near you across the United States.",
     siteName: "Dentist Near Me Now",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://www.dentistnearmenow.com",
+    canonical: "https://dentistnearmenow.com",
   },
 };
 
