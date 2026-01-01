@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Star, User, Loader2, Send, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
@@ -368,15 +369,20 @@ export default function ReviewSection({
               {reviews.map((review) => (
                 <div key={review.source + '-' + review.id} className="border-b pb-4 last:border-0">
                   <div className="flex items-start gap-3 mb-2">
-                    <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-muted rounded-full flex-shrink-0 relative overflow-hidden">
                       {review.reviewer_image_url ? (
-                        <img
+                        <Image
                           src={review.reviewer_image_url}
                           alt={`${review.reviewer_name} profile photo`}
-                          className="w-10 h-10 rounded-full object-cover"
+                          fill
+                          sizes="40px"
+                          className="rounded-full object-cover"
+                          unoptimized
                         />
                       ) : (
-                        <User className="w-5 h-5 text-muted-foreground" />
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

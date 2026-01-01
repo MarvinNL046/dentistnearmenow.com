@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface DentistImageProps {
   src: string | undefined;
@@ -28,12 +29,14 @@ export default function DentistImage({ src, alt, className, placeholderClassName
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
-      className={className || 'w-full h-full object-cover'}
+      fill
+      sizes="(max-width: 768px) 100vw, 400px"
+      className={className || 'object-cover'}
       onError={() => setImageError(true)}
-      loading="lazy"
+      unoptimized
     />
   );
 }

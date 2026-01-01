@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, Phone, Star, Clock, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,14 +33,16 @@ export default function DentistCard({ dentist, showDistance, distance }: Dentist
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Image */}
-          <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 flex-shrink-0">
+          <div className="sm:w-48 h-40 sm:h-auto bg-gray-100 flex-shrink-0 relative min-h-[160px]">
             {dentist.photo && !imageError ? (
-              <img
+              <Image
                 src={dentist.photo}
                 alt={`${dentist.name} - dental practice`}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 100vw, 192px"
+                className="object-cover"
                 onError={() => setImageError(true)}
-                loading="lazy"
+                unoptimized
               />
             ) : (
               <DentistPlaceholder />

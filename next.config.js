@@ -12,7 +12,24 @@ const nextConfig = {
     ],
   },
   images: {
-    domains: ['lh3.googleusercontent.com', 'maps.googleapis.com', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.googleusercontent.com',
+      },
+    ],
   },
   async redirects() {
     return [
@@ -52,14 +69,11 @@ const nextConfig = {
         destination: '/sitemap.xml',
         permanent: true,
       },
-      // Voeg hier eventuele andere oude URLs toe die zijn veranderd
-      // Bijvoorbeeld als jullie oude URL structuur hadden
     ]
   },
   async rewrites() {
     return [
       {
-        // Rewrite /sitemap.xml to the sitemap index API route
         source: '/sitemap.xml',
         destination: '/api/sitemap-index',
       },
@@ -68,7 +82,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Cache headers for sitemap index
         source: '/sitemap.xml',
         headers: [
           {
@@ -78,7 +91,6 @@ const nextConfig = {
         ],
       },
       {
-        // Cache headers for individual sitemaps
         source: '/sitemap/:id.xml',
         headers: [
           {
