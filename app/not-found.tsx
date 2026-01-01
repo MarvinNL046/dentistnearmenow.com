@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Home, Search, MapPin, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Page Not Found',
@@ -110,17 +109,13 @@ export default function NotFound() {
 
           {/* Back Button */}
           <div className="mt-12">
-            <Button
-              variant="outline"
-              onClick={() => typeof window !== 'undefined' && window.history.back()}
-              className="inline-flex items-center gap-2"
-              asChild
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors"
             >
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4" />
-                Go Back
-              </Link>
-            </Button>
+              <ArrowLeft className="w-4 h-4" />
+              Go Back Home
+            </Link>
           </div>
         </div>
       </div>
