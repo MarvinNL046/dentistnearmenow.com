@@ -26,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: [
           '/',              // Allow all public pages
+          '/sitemap/',      // Sitemap files (child sitemaps)
           '/tag/',          // Tag pages are crawlable (for link equity)
           '/services/',     // Service type pages
           '/state/',        // Location pages
