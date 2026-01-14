@@ -33,10 +33,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Emergency Dentist' };
   }
 
+  const canonicalUrl = `https://dentistnearmenow.com/emergency-dentist/${citySlug}`;
+
   return {
     title: `Emergency Dentist in ${parsed.city}, ${parsed.stateAbbr} - 24 Hour Dental Care`,
     description: `Find emergency dentists in ${parsed.city}, ${parsed.stateAbbr} available 24/7. Get immediate care for toothaches, broken teeth, and dental emergencies. Same-day appointments available.`,
     keywords: `emergency dentist ${parsed.city}, 24 hour dentist ${parsed.city}, urgent dental care ${parsed.stateAbbr}`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `Emergency Dentist in ${parsed.city}, ${parsed.stateAbbr}`,
+      description: `Find 24/7 emergency dental care in ${parsed.city}, ${parsed.stateAbbr}.`,
+      url: canonicalUrl,
+    },
   };
 }
 

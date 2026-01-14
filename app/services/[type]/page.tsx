@@ -560,7 +560,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: service.description,
     },
     alternates: {
-      canonical: `/services/${type}`,
+      canonical: `https://dentistnearmenow.com/services/${type}`,
     },
   };
 }

@@ -43,13 +43,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${dentist.name} - ${dentist.businessType || 'Dentist'} in ${dentist.city}, ${dentist.stateAbbr}`;
   const description = `${dentist.name} is a ${dentist.businessType || 'dental practice'} located in ${dentist.city}, ${dentist.stateAbbr}. ${dentist.rating ? `Rated ${dentist.rating}/5 stars.` : ''} ${dentist.phone ? `Call ${dentist.phone} to schedule an appointment.` : ''}`;
 
+  const canonicalUrl = `https://dentistnearmenow.com/dentist/${slug}`;
+
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: dentist.name,
       description,
       type: 'website',
+      url: canonicalUrl,
       images: dentist.photo ? [{ url: dentist.photo }] : undefined,
     },
   };

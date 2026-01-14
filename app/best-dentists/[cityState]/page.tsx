@@ -45,13 +45,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `Find the top 10 dentists in ${pageData.city}, ${pageData.state}. Our ranking uses a transparent Bayesian scoring system based on ${pageData.dentist_count} verified dentist profiles and real patient reviews.`
     : `Find the best dentists in ${pageData.city}, ${pageData.state}. We've ranked ${pageData.dentist_count} local dentists based on verified patient reviews.`;
 
+  const canonicalUrl = `https://dentistnearmenow.com/best-dentists/${cityState}`;
+
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
       type: 'website',
+      url: canonicalUrl,
     },
     robots: pageData.indexable ? undefined : { index: false, follow: true },
   };

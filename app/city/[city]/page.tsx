@@ -38,12 +38,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const state = getStateByAbbr(parsed.stateAbbr);
   const stateName = state?.name || parsed.stateAbbr;
 
+  const canonicalUrl = `https://dentistnearmenow.com/city/${citySlug}`;
+
   return {
     title: `Dentists in ${parsed.city}, ${parsed.stateAbbr} - Find Local Dental Care`,
     description: `Find dentists, dental clinics, and orthodontists in ${parsed.city}, ${stateName}. Read reviews, compare ratings, and find the best dental care near you.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: `Dentists in ${parsed.city}, ${parsed.stateAbbr}`,
       description: `Find quality dental care in ${parsed.city}, ${stateName}.`,
+      url: canonicalUrl,
     },
   };
 }

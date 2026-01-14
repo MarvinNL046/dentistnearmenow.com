@@ -102,7 +102,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `Find quality dental care in ${state.name}. Browse dentists by city and specialty. Emergency dental services available.`,
     },
     alternates: {
-      canonical: `/state/${state.slug}`,
+      canonical: `https://dentistnearmenow.com/state/${state.slug}`,
     },
   };
 }

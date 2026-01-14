@@ -305,9 +305,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Tag Not Found' };
   }
 
+  const canonicalUrl = `https://dentistnearmenow.com/tag/${tag}`;
+
   return {
     title: `${tagDef.title} | DentistNearMeNow`,
     description: tagDef.description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     robots: {
       index: false,  // NOINDEX
       follow: true,  // DOFOLLOW - links pass equity
@@ -315,6 +320,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: tagDef.title,
       description: tagDef.description,
+      url: canonicalUrl,
     },
   };
 }
