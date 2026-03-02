@@ -1,7 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import { unstable_cache } from 'next/cache';
 
-const sql = neon(process.env.DATABASE_URL!);
+const databaseUrl = process.env.DATABASE_URL;
+const sql = databaseUrl ? neon(databaseUrl) : null;
 
 // Confidence factor for Bayesian scoring
 const C = 20;
@@ -39,6 +40,7 @@ export interface PageData {
  */
 export const getPageByCityState = unstable_cache(
   async (city: string, state: string): Promise<PageData | null> => {
+    if (!sql) return null;
     const results = await sql`
       SELECT slug, city, state, indexable, dentist_count, mean_rating, payload
       FROM pages
@@ -65,6 +67,7 @@ export const getPageByCityState = unstable_cache(
  */
 export const getPageBySlug = unstable_cache(
   async (slug: string): Promise<PageData | null> => {
+    if (!sql) return null;
     const results = await sql`
       SELECT slug, city, state, indexable, dentist_count, mean_rating, payload
       FROM pages
@@ -91,6 +94,7 @@ export const getPageBySlug = unstable_cache(
  */
 export const getTop10WithDetails = unstable_cache(
   async (city: string, state: string): Promise<Top10Dentist[]> => {
+    if (!sql) return [];
     // First get city mean rating
     const statsResult = await sql`
       SELECT COALESCE(AVG(rating), 0)::float as mean_rating
@@ -138,6 +142,7 @@ export const getTop10WithDetails = unstable_cache(
  */
 export const getIndexablePages = unstable_cache(
   async (): Promise<{ slug: string; updated_at: string }[]> => {
+    if (!sql) return [];
     const results = await sql`
       SELECT slug, updated_at
       FROM pages
@@ -154,6 +159,7 @@ export const getIndexablePages = unstable_cache(
  * Get top indexable cities for static generation
  */
 export async function getTopCitiesForStaticGen(limit = 50): Promise<string[]> {
+  if (!sql) return [];
   const results = await sql`
     SELECT slug
     FROM pages
@@ -188,6 +194,7 @@ export function parseCityStateSlug(slug: string): { city: string; state: string 
  */
 export const getTopCitiesForHub = unstable_cache(
   async (limit = 100): Promise<{ city: string; state: string; slug: string; dentist_count: number; mean_rating: number }[]> => {
+    if (!sql) return [];
     const results = await sql`
       SELECT city, state, slug, dentist_count, mean_rating
       FROM pages
@@ -210,6 +217,7 @@ export const getTopCitiesForHub = unstable_cache(
  */
 export const getCitiesByState = unstable_cache(
   async (): Promise<Record<string, { city: string; slug: string; dentist_count: number }[]>> => {
+    if (!sql) return {};
     const results = await sql`
       SELECT city, state, slug, dentist_count
       FROM pages
@@ -239,6 +247,7 @@ export const getCitiesByState = unstable_cache(
  */
 export const getRelatedCities = unstable_cache(
   async (state: string, excludeCity: string, limit = 5): Promise<{ city: string; slug: string; dentist_count: number }[]> => {
+    if (!sql) return [];
     const results = await sql`
       SELECT city, slug, dentist_count
       FROM pages

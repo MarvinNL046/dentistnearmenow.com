@@ -48,11 +48,11 @@ export async function generateSitemaps() {
   return sitemaps;
 }
 
-export default async function sitemap(props: {
-  id: Promise<string>
+export default async function sitemap({
+  id,
+}: {
+  id: number;
 }): Promise<MetadataRoute.Sitemap> {
-  // Next.js 16+ passes id as Promise<string>
-  const id = Number(await props.id);
 
   // Sitemap 0: Static pages
   if (id === 0) {
@@ -178,17 +178,21 @@ async function generateStaticSitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Best dentists pages (Top 10) - priority 0.8
   // These are programmatic SEO pages with high value
-  const indexablePages = await getIndexablePages();
-  indexablePages.forEach(page => {
-    // Convert slug from "best-dentists-chicago-il" to URL path
-    const cityStatePart = page.slug.replace('best-dentists-', '');
-    sitemap.push({
-      url: `${BASE_URL}/best-dentists/${cityStatePart}`,
-      lastModified: page.updated_at ? new Date(page.updated_at) : now,
-      changeFrequency: 'daily',
-      priority: 0.85, // High priority for these ranking pages
+  try {
+    const indexablePages = await getIndexablePages();
+    indexablePages.forEach(page => {
+      // Convert slug from "best-dentists-chicago-il" to URL path
+      const cityStatePart = page.slug.replace('best-dentists-', '');
+      sitemap.push({
+        url: `${BASE_URL}/best-dentists/${cityStatePart}`,
+        lastModified: page.updated_at ? new Date(page.updated_at) : now,
+        changeFrequency: 'daily',
+        priority: 0.85, // High priority for these ranking pages
+      });
     });
-  });
+  } catch (error) {
+    console.warn('Sitemap: skipping dynamic best-dentists pages due to data fetch error', error);
+  }
 
   return sitemap;
 }
@@ -201,10 +205,15 @@ async function generateStateSitemap(stateAbbr: string, stateSlug: string): Promi
   const now = new Date();
 
   // Get all dentists and filter for this state
-  const allDentists = await getAllDentists();
-  const stateDentists = allDentists.filter(d =>
-    d.stateAbbr?.toUpperCase() === stateAbbr.toUpperCase()
-  );
+  let stateDentists: Dentist[] = [];
+  try {
+    const allDentists = await getAllDentists();
+    stateDentists = allDentists.filter(d =>
+      d.stateAbbr?.toUpperCase() === stateAbbr.toUpperCase()
+    );
+  } catch (error) {
+    console.warn(`Sitemap: falling back to state-only URLs for ${stateAbbr}`, error);
+  }
 
   // State page - priority 0.8
   sitemap.push({
