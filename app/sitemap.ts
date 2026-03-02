@@ -28,13 +28,6 @@ const BASE_URL = 'https://dentistnearmenow.com';
  * - 0.3: Legal pages, tag pages
  */
 
-// Tag categories for organizing dental content
-const tagCategories = [
-  'accepts-insurance',
-  'weekend-hours',
-  'emergency-available',
-];
-
 // Generate sitemap IDs: 0 for static, 1-51 for states
 export async function generateSitemaps() {
   // Sitemap 0 = static pages
@@ -127,12 +120,20 @@ async function generateStaticSitemap(): Promise<MetadataRoute.Sitemap> {
   // Service type pages - priority 0.8
   const serviceTypes = [
     'general-dentistry',
+    'general-dentist',
     'cosmetic-dentistry',
+    'cosmetic-dentist',
     'orthodontics',
+    'orthodontist',
     'oral-surgery',
+    'oral-surgeon',
     'pediatric-dentistry',
+    'pediatric-dentist',
+    'endodontics',
     'endodontist',
+    'periodontics',
     'periodontist',
+    'emergency-dentistry',
     'emergency-dentist',
   ];
   serviceTypes.forEach(type => {
@@ -166,15 +167,7 @@ async function generateStaticSitemap(): Promise<MetadataRoute.Sitemap> {
     });
   });
 
-  // Tag pages - priority 0.3
-  tagCategories.forEach(tag => {
-    sitemap.push({
-      url: `${BASE_URL}/tag/${tag}`,
-      lastModified: now,
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    });
-  });
+  // Tag pages are intentionally excluded from sitemap because they are marked noindex.
 
   // Best dentists pages (Top 10) - priority 0.8
   // These are programmatic SEO pages with high value

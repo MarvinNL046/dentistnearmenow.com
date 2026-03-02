@@ -33,7 +33,7 @@ const guides = [
   { href: '/guides/finding-right-dentist', label: 'Choosing a Dentist' },
   { href: '/guides/dental-health-tips', label: 'Dental Health Tips' },
   { href: '/guides/dental-anxiety', label: 'Dental Anxiety' },
-  { href: '/guides/eeat-dental-care', label: 'Expert Dental Care' },
+  { href: '/guides/dental-procedures', label: 'Expert Dental Care' },
 ];
 
 const popularCities = [
