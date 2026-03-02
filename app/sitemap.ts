@@ -44,16 +44,25 @@ export async function generateSitemaps() {
 export default async function sitemap({
   id,
 }: {
-  id: number;
+  id: Promise<number | string> | number | string;
 }): Promise<MetadataRoute.Sitemap> {
+  const resolvedId = await id;
+  const sitemapId =
+    typeof resolvedId === 'number'
+      ? resolvedId
+      : Number.parseInt(String(resolvedId), 10);
+
+  if (Number.isNaN(sitemapId)) {
+    return [];
+  }
 
   // Sitemap 0: Static pages
-  if (id === 0) {
+  if (sitemapId === 0) {
     return await generateStaticSitemap();
   }
 
   // Sitemaps 1-51: State-based sitemaps
-  const stateIndex = id - 1;
+  const stateIndex = sitemapId - 1;
   if (stateIndex >= 0 && stateIndex < US_STATES.length) {
     const state = US_STATES[stateIndex];
     return generateStateSitemap(state.abbr, state.slug);
