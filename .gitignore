@@ -23,3 +23,4 @@ data/discovery/
 .idea/
 .vercel
 .env.openai
+.env*.local
