@@ -5,7 +5,7 @@ import { US_STATES, getDentistStats } from '@/lib/dentist-data';
 import { Button } from '@/components/ui/button';
 
 // ISR - revalidate stats every 24 hours
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 const dentalServices: { slug: string; name: string; icon: LucideIcon; description: string }[] = [
   { slug: 'general-dentist', name: 'General Dentistry', icon: Stethoscope, description: 'Routine checkups, cleanings, and preventive care' },

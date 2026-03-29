@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { Phone, AlertTriangle, MapPin, ChevronRight, Clock } from 'lucide-react';
 
 // ISR: Revalidate every 24 hours
-export const revalidate = 86400;
+export const revalidate = 604800;
 import { Button } from '@/components/ui/button';
 import { getEmergencyDentists, getDentistsByCity, getStateByAbbr, getAllDentists } from '@/lib/dentist-data';
 import DentistCard from '@/components/DentistCard';

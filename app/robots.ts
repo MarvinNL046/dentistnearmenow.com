@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 // ISR: Revalidate robots.txt every 24 hours
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 /**
  * Robots.txt configuration for DentistNearMeNow

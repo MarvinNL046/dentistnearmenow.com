@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ChevronRight, ChevronDown, Stethoscope, Baby, Sparkles, SmilePlus, Wrench, Heart, AlertCircle, Crown, MapPin, Users, Phone, DollarSign, Shield, BookOpen, Clock, CheckCircle } from 'lucide-react';
 
 // ISR: Revalidate every 24 hours
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 import { searchDentists } from '@/lib/dentist-data';
 import DentistCard from '@/components/DentistCard';

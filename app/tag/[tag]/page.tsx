@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import type { Dentist } from '@/lib/dentist-data';
 
 // ISR: Revalidate every 24 hours
-export const revalidate = 86400;
+export const revalidate = 604800;
 
 // Tag definitions with filter functions
 interface TagDefinition {
